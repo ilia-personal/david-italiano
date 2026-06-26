@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>🇮🇹 David's Italiano — Урок 1</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(160deg, #009246 0%, #009246 30%, #ffffff 30%, #ffffff 70%, #ce2b37 70%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+    max-width: 440px;
+    width: 100%;
+    overflow: hidden;
+  }
+  .header {
+    background: #009246;
+    color: #fff;
+    padding: 18px 24px 14px;
+    text-align: center;
+  }
+  .header h1 { font-size: 20px; font-weight: 700; margin-bottom: 3px; }
+  .header .subtitle { font-size: 13px; opacity: 0.9; }
+  .progress-wrap { padding: 14px 20px 0; }
+  .progress-meta { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #666; margin-bottom: 6px; }
+  .score-badge { background: #f0faf4; color: #009246; font-weight: 700; padding: 3px 10px; border-radius: 20px; font-size: 13px; }
+  .progress-bar { height: 7px; background: #eee; border-radius: 4px; overflow: hidden; margin-bottom: 4px; }
+  .progress-fill { height: 100%; background: #009246; border-radius: 4px; transition: width 0.4s ease; }
+  .dots { display: flex; gap: 4px; flex-wrap: wrap; padding: 8px 20px 0; }
+  .dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: #eee; border: 2px solid #ddd;
+    transition: all 0.2s; cursor: pointer;
+  }
+  .dot.current { border-color: #009246; background: #fff; box-shadow: 0 0 0 2px #009246; }
+  .dot.correct { background: #28a745; border-color: #28a745; }
+  .dot.wrong { background: #dc3545; border-color: #dc3545; }
+  .question-area { padding: 22px 24px 8px; text-align: center; }
+  .question-label { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .word-display { font-size: 36px; font-weight: 800; color: #1a1a1a; margin-bottom: 10px; line-height: 1.1; }
+  .tts-btn {
+    background: none; border: 2px solid #009246; color: #009246;
+    border-radius: 20px; padding: 5px 16px; font-size: 13px;
+    cursor: pointer; margin-bottom: 20px; transition: all 0.2s;
+  }
+  .tts-btn:hover { background: #009246; color: #fff; }
+  .tts-btn.playing { background: #009246; color: #fff; }
+  #mic-btn.recording { background: #ce2b37 !important; color: #fff !important; animation: pulse 0.8s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+  .options { display: flex; flex-direction: column; gap: 10px; padding: 0 20px 14px; }
+  .option-btn {
+    width: 100%; padding: 16px 18px; font-size: 17px; font-weight: 600;
+    border-radius: 14px; border: 2.5px solid #e0e0e0; background: #fafafa;
+    cursor: pointer; transition: all 0.15s; color: #222; text-align: center;
+  }
+  .option-btn:hover:not(:disabled) { border-color: #009246; background: #f0faf4; transform: translateY(-1px); }
+  .option-btn:active:not(:disabled) { transform: scale(0.98); }
+  .option-btn.correct  { background: #d4edda; border-color: #28a745; color: #155724; }
+  .option-btn.wrong    { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+  .option-btn.reveal   { background: #d4edda; border-color: #28a745; color: #155724; opacity: 0.75; }
+  .option-btn.r-correct { background: #d4edda; border-color: #28a745; color: #155724; }
+  .option-btn.r-wrong   { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+  .option-btn.r-reveal  { background: #e8f5e9; border-color: #28a745; color: #155724; opacity: 0.8; }
+  .option-btn:disabled { cursor: default; transform: none !important; }
+  .feedback { text-align: center; font-size: 18px; font-weight: 700; padding: 2px 20px 12px; min-height: 30px; }
+  .feedback.ok { color: #28a745; }
+  .feedback.no { color: #dc3545; }
+  .nav-row { display: flex; gap: 10px; padding: 0 20px 20px; }
+  .nav-btn {
+    flex: 1; padding: 14px; font-size: 16px; font-weight: 700;
+    border-radius: 14px; border: none; cursor: pointer; transition: all 0.15s;
+  }
+  .nav-btn:active { transform: scale(0.97); }
+  .btn-prev { background: #f0f0f0; color: #555; }
+  .btn-prev:hover:not(:disabled) { background: #e0e0e0; }
+  .btn-prev:disabled { opacity: 0.35; cursor: default; transform: none; }
+  .btn-next { background: #009246; color: #fff; }
+  .btn-next:hover { background: #007a38; }
+  .btn-next.hidden { display: none; }
+  .result-screen { padding: 36px 24px; text-align: center; display: none; }
+  .result-screen .emoji { font-size: 68px; margin-bottom: 12px; }
+  .result-screen h2 { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+  .score-big { font-size: 60px; font-weight: 900; color: #009246; line-height: 1; margin: 14px 0 4px; }
+  .out-of { font-size: 16px; color: #888; margin-bottom: 14px; }
+  .result-msg { font-size: 16px; color: #555; margin-bottom: 22px; line-height: 1.5; }
+  .copy-btn {
+    width: 100%; padding: 14px; font-size: 15px; font-weight: 700;
+    border-radius: 14px; border: 2px solid #009246; background: #fff;
+    color: #009246; cursor: pointer; margin-bottom: 10px; transition: all 0.2s;
+  }
+  .copy-btn:hover { background: #f0faf4; }
+  .copy-btn.copied { background: #009246; color: #fff; }
+  .restart-btn {
+    width: 100%; padding: 14px; font-size: 16px; font-weight: 700;
+    border-radius: 14px; border: none; background: #ce2b37; color: #fff;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .restart-btn:hover { background: #a8202b; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <h1>🇮🇹 David's Italiano</h1>
+    <div class="subtitle">Урок 1 · Il Mercato — Словарный квиз</div>
+  </div>
+
+  <div id="quiz-body">
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span id="q-counter">Вопрос 1 из 15</span>
+        <span class="score-badge">⭐ <span id="score-display">0</span> очков</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+    <div class="dots" id="dots-row"></div>
+
+    <div class="question-area">
+      <div class="question-label" id="question-label">Что значит слово?</div>
+      <div class="word-display" id="word-display">—</div>
+      <button class="tts-btn" id="tts-btn" onclick="speakWord()">🔊 Послушать</button>
+      <button class="tts-btn" id="mic-btn" onclick="toggleVoice()" style="display:none;border-color:#ce2b37;color:#ce2b37;margin-left:8px">🎤 Голос</button>
+    </div>
+
+    <div class="options" id="options-container"></div>
+    <div class="feedback" id="feedback"></div>
+
+    <div class="nav-row">
+      <button class="nav-btn btn-prev" id="btn-prev" onclick="goTo(current-1)" disabled>← Назад</button>
+      <button class="nav-btn btn-next hidden" id="btn-next" onclick="advance()">Вперёд →</button>
+    </div>
+  </div>
+
+  <div class="result-screen" id="result-screen">
+    <div class="emoji" id="result-emoji">🎉</div>
+    <h2 id="result-title">Отличная работа!</h2>
+    <div class="score-big" id="result-score">0</div>
+    <div class="out-of">правильных из 15</div>
+    <div class="result-msg" id="result-msg"></div>
+    <button class="copy-btn" id="copy-btn" onclick="copyScore()">📋 Скопировать результат для Slack</button>
+    <button class="restart-btn" onclick="startQuiz()">🔄 Пройти ещё раз</button>
+  </div>
+</div>
+
+<script>
+const vocab = [
+  {it:"il mercato",     ru:"рынок",             en:"market",         wr:["площадь","магазин"],    wi:["il negozio","la piazza"]},
+  {it:"la bancarella",  ru:"лоток / прилавок",  en:"market stall",   wr:["автобус","полка"],      wi:["lo scaffale","il treno"]},
+  {it:"il portafoglio", ru:"кошелёк",            en:"wallet",         wr:["сумка","ключи"],        wi:["la borsa","le chiavi"]},
+  {it:"la banconota",   ru:"купюра / банкнота",  en:"banknote",       wr:["монета","карточка"],    wi:["la moneta","la carta"]},
+  {it:"il resto",       ru:"сдача",              en:"change (money)", wr:["цена","налог"],         wi:["il prezzo","la tassa"]},
+  {it:"lo sconto",      ru:"скидка",             en:"discount",       wr:["очередь","касса"],      wi:["la fila","la cassa"]},
+  {it:"lo scontrino",   ru:"чек",                en:"receipt",        wr:["билет","письмо"],       wi:["il biglietto","la lettera"]},
+  {it:"il commesso",    ru:"продавец",            en:"shop assistant", wr:["покупатель","директор"],wi:["il cliente","il direttore"]},
+  {it:"il cartellino",  ru:"ценник",             en:"price tag",      wr:["обложка","стикер"],     wi:["la copertina","il foglio"]},
+  {it:"spendere",       ru:"тратить",            en:"to spend",       wr:["зарабатывать","менять"],wi:["guadagnare","cambiare"]},
+  {it:"costare",        ru:"стоить",             en:"to cost",        wr:["платить","менять"],     wi:["pagare","cambiare"]},
+  {it:"pesare",         ru:"взвешивать",          en:"to weigh",       wr:["считать","измерять"],   wi:["contare","misurare"]},
+  {it:"assaggiare",     ru:"пробовать на вкус",   en:"to taste",       wr:["нюхать","смотреть"],    wi:["annusare","guardare"]},
+  {it:"vorrei",         ru:"я бы хотел(а)",       en:"I would like",   wr:["мне нравится","есть"], wi:["mi piace","ho"]},
+  {it:"il chilo",       ru:"килограмм",           en:"kilogram",       wr:["литр","метр"],          wi:["il litro","il metro"]},
+];
+
+let questions=[], current=0, score=0, answers=[], autoTimer=null, wrongWords=[];
+const SCORE_SERVER = 'http://72.61.95.202:7891';
+
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+
+function buildQuestions(){
+  questions=[];
+  shuffle([...vocab]).forEach((v,i)=>{
+    if(i<8) questions.push({type:'it2ru',word:v.it,answer:v.ru,options:shuffle([v.ru,v.wr[0],v.wr[1]]),voice:v.it});
+    else     questions.push({type:'ru2it',word:v.ru,answer:v.it,options:shuffle([v.it,v.wi[0],v.wi[1]]),voice:v.it});
+  });
+}
+
+function startQuiz(){
+  score=0; current=0; wrongWords=[];
+  buildQuestions();
+  answers=new Array(questions.length).fill(null);
+  document.getElementById('quiz-body').style.display='';
+  document.getElementById('result-screen').style.display='none';
+  buildDots();
+  render(0);
+}
+
+function buildDots(){
+  const row=document.getElementById('dots-row');
+  row.innerHTML='';
+  questions.forEach((_,i)=>{
+    const d=document.createElement('div');
+    d.className='dot'; d.id=`dot-${i}`; d.title=`Вопрос ${i+1}`;
+    d.onclick=()=>goTo(i);
+    row.appendChild(d);
+  });
+}
+
+function updateDots(){
+  questions.forEach((_,i)=>{
+    const d=document.getElementById(`dot-${i}`);
+    d.className='dot';
+    if(i===current) d.classList.add('current');
+    else if(answers[i]) d.classList.add(answers[i].correct?'correct':'wrong');
+  });
+}
+
+function goTo(idx){
+  if(autoTimer){clearTimeout(autoTimer);autoTimer=null;}
+  if(idx<0||idx>=questions.length) return;
+  current=idx; render(idx);
+}
+
+function advance(){
+  if(autoTimer){clearTimeout(autoTimer);autoTimer=null;}
+  if(current+1>=questions.length && answers.every(a=>a!==null)){showResult();return;}
+  if(current+1<questions.length){current++;render(current);}
+}
+
+function render(idx){
+  current=idx;
+  const q=questions[idx], ans=answers[idx], reviewing=ans!==null;
+  document.getElementById('q-counter').textContent=`Вопрос ${idx+1} из ${questions.length}`;
+  document.getElementById('score-display').textContent=score;
+  document.getElementById('progress-fill').style.width=`${(answers.filter(Boolean).length/questions.length)*100}%`;
+  document.getElementById('question-label').textContent=q.type==='it2ru'?'Что значит это слово?':'Как сказать по-итальянски?';
+  document.getElementById('word-display').textContent=q.word;
+  document.getElementById('tts-btn').style.display=q.type==='it2ru'?'':'none';
+  document.getElementById('tts-btn').className='tts-btn';
+  const micEl=document.getElementById('mic-btn');
+  // Show mic only on ru2it (Russian→Italian) questions — that's when David practices speaking Italian
+  if(HAS_MIC && !reviewing && q.type==='ru2it'){micEl.style.display='';micEl.textContent='🎤 Скажи по-итальянски';micEl.classList.remove('recording');}
+  else{micEl.style.display='none';}
+  if(micRec){try{micRec.stop();}catch(e){} micRec=null;}
+
+  const fb=document.getElementById('feedback');
+  const container=document.getElementById('options-container');
+  container.innerHTML='';
+
+  q.options.forEach(opt=>{
+    const btn=document.createElement('button');
+    btn.className='option-btn';
+    btn.textContent=opt;
+    if(reviewing){
+      btn.disabled=true;
+      if(opt===q.answer&&ans.chosen===opt) btn.classList.add('r-correct');
+      else if(opt===ans.chosen) btn.classList.add('r-wrong');
+      else if(opt===q.answer) btn.classList.add('r-reveal');
+    } else {
+      btn.onclick=()=>selectAnswer(opt,btn,q,idx);
+    }
+    container.appendChild(btn);
+  });
+
+  if(reviewing){
+    fb.textContent=ans.correct?'✓ Правильно!':'✗ Ответ: '+q.answer;
+    fb.className='feedback '+(ans.correct?'ok':'no');
+  } else {
+    fb.textContent=''; fb.className='feedback';
+  }
+
+  const prevBtn=document.getElementById('btn-prev');
+  const nextBtn=document.getElementById('btn-next');
+  prevBtn.disabled=idx===0;
+  if(reviewing){
+    nextBtn.classList.remove('hidden');
+    const allDone=answers.every(a=>a!==null);
+    nextBtn.textContent=(idx===questions.length-1&&allDone)?'Результат 🏁':'Вперёд →';
+  } else {
+    nextBtn.classList.add('hidden');
+  }
+  updateDots();
+}
+
+function selectAnswer(chosen,btn,q,idx){
+  if(answers[idx]) return;
+  const correct=chosen===q.answer;
+  if(correct) score++;
+  else wrongWords.push(q.word);
+  answers[idx]={chosen,correct};
+  document.querySelectorAll('.option-btn').forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===q.answer) b.classList.add('correct');
+  });
+  if(!correct){btn.classList.remove('correct');btn.classList.add('wrong');}
+  const fb=document.getElementById('feedback');
+  fb.textContent=correct?'✓ Правильно! Молодец!':'✗ Ответ: '+q.answer;
+  fb.className='feedback '+(correct?'ok':'no');
+  document.getElementById('score-display').textContent=score;
+  const nextBtn=document.getElementById('btn-next');
+  nextBtn.classList.remove('hidden');
+  const allDone=answers.every(a=>a!==null);
+  nextBtn.textContent=(idx===questions.length-1&&allDone)?'Результат 🏁':'Вперёд →';
+  updateDots();
+  // Auto-advance: shorter wait if correct, longer if wrong (Next button cancels it)
+  if(autoTimer) clearTimeout(autoTimer);
+  autoTimer=setTimeout(()=>{ autoTimer=null; advance(); }, correct ? 1500 : 2400);
+}
+
+function speakWord(){
+  const q=questions[current], btn=document.getElementById('tts-btn');
+  if('speechSynthesis' in window){
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(q.voice);
+    u.lang='it-IT'; u.rate=0.82;
+    u.onstart=()=>btn.classList.add('playing');
+    u.onend=()=>btn.classList.remove('playing');
+    window.speechSynthesis.speak(u);
+  }
+}
+
+function showResult(){
+  document.getElementById('quiz-body').style.display='none';
+  document.getElementById('result-screen').style.display='';
+  const pct=Math.round(score/questions.length*100);
+  document.getElementById('result-score').textContent=score;
+  let e,t,m;
+  if(pct>=90){e='🏆';t='Превосходно!';m='Блестящий результат! Урок 1 усвоен. Domani — новые слова!';}
+  else if(pct>=70){e='🎉';t='Хорошая работа!';m='Почти всё правильно. Повтори пару слов и ты будешь отличником!';}
+  else if(pct>=50){e='💪';t='Неплохо!';m='Ещё немного практики — и слова запомнятся!';}
+  else{e='📚';t='Продолжай!';m="Перечитай историю и попробуй ещё раз. Ogni giorno un po' meglio!";}
+  document.getElementById('result-emoji').textContent=e;
+  document.getElementById('result-title').textContent=t;
+  document.getElementById('result-msg').textContent=m;
+  document.getElementById('copy-btn').textContent='📋 Скопировать результат для Slack';
+  document.getElementById('copy-btn').classList.remove('copied');
+  // Auto-submit score to server (fire & forget)
+  const d=new Date().toLocaleDateString('ru-RU');
+  fetch(SCORE_SERVER+'/score',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({date:d,lesson:'Lesson 1 — Il Mercato',quizType:'Vocabulary',
+      score,total:questions.length,wrongWords})}).catch(()=>{});
+}
+
+function copyScore(){
+  const d=new Date().toLocaleDateString('ru-RU');
+  const txt=`🇮🇹 Квиз — Урок 1: Il Mercato\n✅ Результат: ${score}/15 (${Math.round(score/15*100)}%)\n📅 ${d}\n🔗 https://ilia-inovaflow.github.io/david-italiano/`;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const b=document.getElementById('copy-btn');
+    b.textContent='✓ Скопировано! Вставь в Slack';
+    b.classList.add('copied');
+  }).catch(()=>prompt('Скопируй вручную:',`Урок 1: ${score}/15`));
+}
+
+// ─── Voice recognition ───────────────────────────────────────────────
+let micRec = null;
+const HAS_MIC = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+
+// Match spoken Italian text against option texts. No letters/numbers — pure text.
+function matchVoice(alts, optionTexts) {
+  for (const raw of alts) {
+    const t = raw.toLowerCase().trim();
+    for (let i = 0; i < optionTexts.length; i++) {
+      const opt = optionTexts[i].toLowerCase().replace(/^(il |la |lo |i |gli |le |l')/, '');
+      // transcript contains the option OR option contains the transcript (both directions)
+      if (t.includes(opt) || opt.includes(t)) return i;
+      // word-level: any meaningful word from the option found in transcript
+      const optWords = opt.split(/[\s,/()]+/).filter(w => w.length > 2);
+      if (optWords.some(w => t.includes(w))) return i;
+    }
+  }
+  return -1;
+}
+
+function toggleVoice() {
+  if (answers[current]) return;
+  const btn = document.getElementById('mic-btn');
+  if (micRec) {
+    try { micRec.stop(); } catch(e){}
+    micRec = null;
+    btn.textContent = '🎤 Голос';
+    btn.classList.remove('recording');
+    return;
+  }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return;
+  micRec = new SR();
+  micRec.lang = 'it-IT';  // David practices speaking Italian
+  micRec.maxAlternatives = 5;
+  micRec.interimResults = false;
+  btn.textContent = '⏹ Стоп';
+  btn.classList.add('recording');
+  micRec.onresult = (e) => {
+    const alts = Array.from({length: e.results[0].length}, (_,i) => e.results[0][i].transcript);
+    const q = questions[current];
+    const idx = matchVoice(alts, q.options);
+    btn.textContent = '🎤 Голос';
+    btn.classList.remove('recording');
+    micRec = null;
+    if (idx >= 0) {
+      const optBtns = document.querySelectorAll('.option-btn');
+      if (optBtns[idx]) selectAnswer(q.options[idx], optBtns[idx], q, current);
+    } else {
+      const fb = document.getElementById('feedback');
+      fb.textContent = `🎤 Слышу: "${alts[0]}" — скажи «А», «Б», «В» или само слово`;
+      fb.className = 'feedback no';
+      setTimeout(() => { if(!answers[current]){fb.textContent='';fb.className='feedback';} }, 3000);
+    }
+  };
+  micRec.onerror = () => { btn.textContent='🎤 Голос'; btn.classList.remove('recording'); micRec=null; };
+  micRec.onend = () => { btn.classList.remove('recording'); if(micRec){micRec=null;btn.textContent='🎤 Голос';} };
+  micRec.start();
+}
+// ─────────────────────────────────────────────────────────────────────
+
+startQuiz();
+</script>
+</body>
+</html>
