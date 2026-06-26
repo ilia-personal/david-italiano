@@ -338,12 +338,12 @@ function showResult(){
   fetch(SCORE_SERVER+'/score',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({date:d,lesson:'Урок 1 — Il Mercato',quizType:'Vocabulary Quiz',
       score,total:questions.length,wrongWords,
-      url:'https://ilia-inovaflow.github.io/david-italiano/lesson-01-vocab.html'})}).catch(()=>{});
+      url:'https://ilia-personal.github.io/david-italiano/lesson-01-vocab.html'})}).catch(()=>{});
 }
 
 function copyScore(){
   const d=new Date().toLocaleDateString('ru-RU');
-  const txt=`🇮🇹 Квиз — Урок 1: Il Mercato\n✅ Результат: ${score}/15 (${Math.round(score/15*100)}%)\n📅 ${d}\n🔗 https://ilia-inovaflow.github.io/david-italiano/`;
+  const txt=`🇮🇹 Квиз — Урок 1: Il Mercato\n✅ Результат: ${score}/15 (${Math.round(score/15*100)}%)\n📅 ${d}\n🔗 https://ilia-personal.github.io/david-italiano/`;
   navigator.clipboard.writeText(txt).then(()=>{
     const b=document.getElementById('copy-btn');
     b.textContent='✓ Скопировано! Вставь в Slack';
