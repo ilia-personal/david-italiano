@@ -837,37 +837,15 @@ function hasSpeechRecognition() {
   return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
 }
 
-// Match a spoken transcript (or array of alternatives) against quiz options.
-// Returns the matched option index (0/1/2) or -1.
+// Italian text matching only — David speaks the Italian answer, we match it.
 function matchVoice(transcripts, optionTexts) {
-  const LETTER = {
-    // Russian Cyrillic spoken letters
-    'а':0,'б':1,'в':2,
-    // Latin A/B/C
-    'a':0,'b':1,'c':2,
-    // Russian ordinals / numbers
-    'один':0,'первый':0,'первое':0,'first':0,'one':0,'1':0,
-    'два':1,'второй':1,'второе':1,'second':1,'two':1,'2':1,
-    'три':2,'третий':2,'третье':2,'third':2,'three':2,'3':2,
-  };
-
   for (const raw of transcripts) {
     const t = raw.toLowerCase().trim();
-    const words = t.split(/\s+/);
-
-    // 1. Letter/number match — check full string, first word, last word
-    for (const token of [t, words[0], words[words.length-1]]) {
-      if (token in LETTER) return LETTER[token];
-    }
-
-    // 2. Text match against each option
     for (let i = 0; i < optionTexts.length; i++) {
-      const opt = optionTexts[i].toLowerCase();
-      const optWords = opt.split(/[\s/,]+/);
-      // Any meaningful option word appears in transcript?
-      if (optWords.some(w => w.length > 2 && t.includes(w))) return i;
-      // Transcript appears inside option?
-      if (t.length > 2 && opt.includes(t)) return i;
+      const opt = optionTexts[i].toLowerCase().replace(/^(il |la |lo |i |gli |le |l')/, '');
+      if (t.includes(opt) || opt.includes(t)) return i;
+      const optWords = opt.split(/[\s,/()]+/).filter(w => w.length > 2);
+      if (optWords.some(w => t.includes(w))) return i;
     }
   }
   return -1;
@@ -877,9 +855,9 @@ function startRecognition(slideIndex, onResult) {
   if (!hasSpeechRecognition()) return;
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   recognition = new SR();
-  recognition.lang = 'ru-RU';
+  recognition.lang = 'it-IT';  // David speaks Italian to select answers
   recognition.interimResults = false;
-  recognition.maxAlternatives = 5;  // collect more guesses to improve matching
+  recognition.maxAlternatives = 5;
 
   recognition.onresult = (e) => {
     // Collect ALL alternatives, not just the top one

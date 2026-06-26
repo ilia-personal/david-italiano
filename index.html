@@ -237,7 +237,8 @@ function render(idx){
   document.getElementById('tts-btn').style.display=q.type==='it2ru'?'':'none';
   document.getElementById('tts-btn').className='tts-btn';
   const micEl=document.getElementById('mic-btn');
-  if(HAS_MIC && !reviewing){micEl.style.display='';micEl.textContent='🎤 Голос';micEl.classList.remove('recording');}
+  // Show mic only on ru2it (Russian→Italian) questions — that's when David practices speaking Italian
+  if(HAS_MIC && !reviewing && q.type==='ru2it'){micEl.style.display='';micEl.textContent='🎤 Скажи по-итальянски';micEl.classList.remove('recording');}
   else{micEl.style.display='none';}
   if(micRec){try{micRec.stop();}catch(e){} micRec=null;}
 
@@ -353,24 +354,17 @@ function copyScore(){
 let micRec = null;
 const HAS_MIC = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
 
+// Match spoken Italian text against option texts. No letters/numbers — pure text.
 function matchVoice(alts, optionTexts) {
-  const LETTER = {
-    'а':0,'б':1,'в':2,'a':0,'b':1,'c':2,
-    'один':0,'первый':0,'first':0,'one':0,'1':0,
-    'два':1,'второй':1,'second':1,'two':1,'2':1,
-    'три':2,'третий':2,'third':2,'three':2,'3':2,
-  };
   for (const raw of alts) {
     const t = raw.toLowerCase().trim();
-    const words = t.split(/\s+/);
-    for (const tok of [t, words[0], words[words.length-1]]) {
-      if (tok in LETTER) return LETTER[tok];
-    }
     for (let i = 0; i < optionTexts.length; i++) {
-      const opt = optionTexts[i].toLowerCase();
-      const optWords = opt.split(/[\s/,()]+/);
-      if (optWords.some(w => w.length > 2 && t.includes(w))) return i;
-      if (t.length > 2 && opt.includes(t)) return i;
+      const opt = optionTexts[i].toLowerCase().replace(/^(il |la |lo |i |gli |le |l')/, '');
+      // transcript contains the option OR option contains the transcript (both directions)
+      if (t.includes(opt) || opt.includes(t)) return i;
+      // word-level: any meaningful word from the option found in transcript
+      const optWords = opt.split(/[\s,/()]+/).filter(w => w.length > 2);
+      if (optWords.some(w => t.includes(w))) return i;
     }
   }
   return -1;
@@ -389,7 +383,7 @@ function toggleVoice() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) return;
   micRec = new SR();
-  micRec.lang = 'ru-RU';
+  micRec.lang = 'it-IT';  // David practices speaking Italian
   micRec.maxAlternatives = 5;
   micRec.interimResults = false;
   btn.textContent = '⏹ Стоп';
