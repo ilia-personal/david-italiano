@@ -660,10 +660,17 @@
   <div class="header">
     <div class="header-top">
       <div class="header-title">🇮🇹 Il Mercato di Roma</div>
-      <div class="slide-counter" id="slideCounter">0 / 16</div>
+      <div class="slide-counter" id="slideCounter">0 / 26</div>
     </div>
     <div class="progress-bar-track">
       <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div style="margin-top:8px;display:flex;align-items:center;gap:8px">
+      <span style="font-size:12px;opacity:0.8">🔊</span>
+      <select id="voicePicker" onchange="setVoice(this.value)"
+        style="flex:1;font-size:12px;padding:4px 8px;border-radius:8px;border:none;background:rgba(255,255,255,0.2);color:#fff;outline:none">
+        <option>Загрузка голосов…</option>
+      </select>
     </div>
   </div>
 
@@ -963,7 +970,20 @@ function totalQuizCount() {
 }
 
 function correctCount() {
-  return Object.values(quizAnswers).filter(Boolean).length;
+  // Only count boolean-true values, NOT the _chosen index entries (which are truthy ints)
+  return Object.keys(quizAnswers)
+    .filter(k => !k.includes('_chosen'))
+    .filter(k => quizAnswers[k] === true).length;
+}
+
+function fullScore() {
+  const qzKeys = Object.keys(quizAnswers).filter(k => !k.includes('_chosen'));
+  return {
+    quiz:     { c: qzKeys.filter(k => quizAnswers[k] === true).length,      t: SLIDES.filter(s => s.type === 'quiz').length },
+    cloze:    { c: Object.values(clozeAnswered).filter(Boolean).length,       t: SLIDES.filter(s => s.type === 'cloze').length },
+    translate:{ c: Object.values(translateAnswered).filter(Boolean).length,   t: SLIDES.filter(s => s.type === 'translate').length },
+    dialogue: { c: Object.values(dialogueAnswered).filter(Boolean).length,    t: SLIDES.filter(s => s.type === 'dialogue').length },
+  };
 }
 
 // ─────────────────────────────────────────────
@@ -1005,6 +1025,39 @@ function stopTTS() {
   }
 }
 
+// ── Voice selection ──────────────────────────
+let selectedVoice = null;
+
+function loadVoices() {
+  const voices = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('it'));
+  const sel = document.getElementById('voicePicker');
+  if (!sel || voices.length === 0) return;
+  sel.innerHTML = voices.map((v, i) =>
+    `<option value="${i}" ${selectedVoice && v.name === selectedVoice.name ? 'selected' : ''}>${v.name} (${v.lang})</option>`
+  ).join('');
+  // Auto-pick the most natural: prefer "Google" or "Alice" or first
+  if (!selectedVoice) {
+    const saved = localStorage.getItem('davidItalianoVoice');
+    const pick = voices.find(v => v.name === saved)
+      || voices.find(v => v.name.includes('Google'))
+      || voices.find(v => v.name === 'Alice')
+      || voices[0];
+    selectedVoice = pick;
+    sel.value = voices.indexOf(pick);
+  }
+}
+
+function setVoice(idx) {
+  const voices = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('it'));
+  selectedVoice = voices[parseInt(idx)] || null;
+  if (selectedVoice) localStorage.setItem('davidItalianoVoice', selectedVoice.name);
+}
+
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+  setTimeout(loadVoices, 300);
+}
+
 function playTTS(text, btn) {
   if (!window.speechSynthesis) {
     showToast('TTS недоступен в этом браузере');
@@ -1022,6 +1075,7 @@ function playTTS(text, btn) {
   utter.lang = 'it-IT';
   utter.rate = 0.82;
   utter.pitch = 1.0;
+  if (selectedVoice) utter.voice = selectedVoice;
 
   utter.onend = () => {
     ttsPlaying = false;
@@ -1082,13 +1136,26 @@ function hasSpeechRecognition() {
 
 // Italian text matching only — David speaks the Italian answer, we match it.
 function matchVoice(transcripts, optionTexts) {
+  const clean = s => s.toLowerCase().replace(/[^a-zàèéìíîòóùú'\s]/gi, '').trim();
+  // Strip articles; split into content words; require a match of the longest content word
+  const optData = optionTexts.map(o => {
+    const stripped = clean(o).replace(/^(il |la |lo |i |gli |le |l')/, '');
+    const words = stripped.split(/[\s,/()]+/).filter(w => w.length > 3); // only meaningful words
+    return { stripped, words };
+  });
+
   for (const raw of transcripts) {
-    const t = raw.toLowerCase().trim();
-    for (let i = 0; i < optionTexts.length; i++) {
-      const opt = optionTexts[i].toLowerCase().replace(/^(il |la |lo |i |gli |le |l')/, '');
-      if (t.includes(opt) || opt.includes(t)) return i;
-      const optWords = opt.split(/[\s,/()]+/).filter(w => w.length > 2);
-      if (optWords.some(w => t.includes(w))) return i;
+    const heard = clean(raw);
+    for (let i = 0; i < optData.length; i++) {
+      const { stripped, words } = optData[i];
+      // Exact phrase match
+      if (heard === stripped) return i;
+      // All long content words appear in what was heard (stricter than "any word")
+      if (words.length > 0 && words.every(w => heard.includes(w))) return i;
+      // At least 2 words match if there are multiple (avoids single-word coincidences)
+      if (words.length >= 2 && words.filter(w => heard.includes(w)).length >= 2) return i;
+      // Single long word (≥5 chars) exact match
+      if (words.length === 1 && words[0].length >= 5 && heard.includes(words[0])) return i;
     }
   }
   return -1;
@@ -1289,52 +1356,71 @@ function handleAskMario(italianText) {
 // ── OPTION 1: Read-Aloud Echo Check ──────────
 let echoRecognition = null;
 
+let echoAccumulated = [];  // words heard across multiple recognition segments
+let echoStopping = false;  // true when user pressed stop
+
 function handleEcho(expectedText) {
   const btn = document.getElementById('echoBtn');
   const result = document.getElementById('echoResult');
 
-  if (echoRecognition) {
-    echoRecognition.stop();
-    echoRecognition = null;
-    btn.classList.remove('recording');
-    btn.textContent = '🎤 Повтори вслух';
+  // STOP: user pressed again while recording
+  if (echoRecognition || echoStopping) {
+    echoStopping = true;
+    if (echoRecognition) { try { echoRecognition.stop(); } catch(e){} }
     return;
   }
 
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { showToast('Микрофон не поддерживается в этом браузере'); return; }
 
-  echoRecognition = new SR();
-  echoRecognition.lang = 'it-IT';
-  echoRecognition.maxAlternatives = 5;
-  echoRecognition.interimResults = false;
-
+  echoAccumulated = [];
+  echoStopping = false;
   btn.classList.add('recording');
-  btn.textContent = '⏹ Слушаю...';
+  btn.textContent = '⏹ Стоп (нажми чтобы завершить)';
   result.style.display = 'none';
 
-  echoRecognition.onresult = (e) => {
-    const transcripts = [];
-    for (let i = 0; i < e.results[0].length; i++) transcripts.push(e.results[0][i].transcript);
-    showEchoFeedback(transcripts, expectedText);
-    btn.classList.remove('recording');
-    btn.textContent = '🎤 Повтори ещё раз';
-    echoRecognition = null;
-  };
-  echoRecognition.onerror = () => {
-    btn.classList.remove('recording');
-    btn.textContent = '🎤 Повтори вслух';
-    echoRecognition = null;
-    showToast('Не удалось распознать. Попробуй снова.');
-  };
-  echoRecognition.onend = () => {
-    if (echoRecognition) { echoRecognition = null; }
-    if (btn.classList.contains('recording')) {
+  function startEchoSession() {
+    if (echoStopping) {
+      // User stopped — show final feedback
+      btn.classList.remove('recording');
+      btn.textContent = '🎤 Повтори ещё раз';
+      echoRecognition = null;
+      if (echoAccumulated.length) showEchoFeedback(echoAccumulated, expectedText);
+      return;
+    }
+    const sr = new SR();
+    sr.lang = 'it-IT';
+    sr.maxAlternatives = 8;
+    sr.interimResults = false;
+    sr.continuous = false; // single-segment; we restart for continuous effect
+
+    sr.onresult = (e) => {
+      for (let i = 0; i < e.results[0].length; i++) echoAccumulated.push(e.results[0][i].transcript);
+      // Live preview as David speaks
+      showEchoFeedback(echoAccumulated, expectedText);
+    };
+    sr.onerror = (ev) => {
+      if (ev.error === 'no-speech' || ev.error === 'aborted') return; // just restart
       btn.classList.remove('recording');
       btn.textContent = '🎤 Повтори вслух';
-    }
-  };
-  echoRecognition.start();
+      echoRecognition = null; echoStopping = false;
+    };
+    sr.onend = () => {
+      echoRecognition = null;
+      // Auto-restart unless user stopped
+      if (!echoStopping) {
+        setTimeout(startEchoSession, 80);
+      } else {
+        btn.classList.remove('recording');
+        btn.textContent = '🎤 Повтори ещё раз';
+        if (echoAccumulated.length) showEchoFeedback(echoAccumulated, expectedText);
+      }
+    };
+    echoRecognition = sr;
+    try { sr.start(); } catch(e) { echoRecognition = null; }
+  }
+
+  startEchoSession();
 }
 
 function showEchoFeedback(transcripts, expected) {
@@ -1806,39 +1892,59 @@ function resetRetell(idx, keywords) {
 }
 
 function renderResults() {
-  const correct = correctCount();
-  const total = totalQuizCount();
-  let emoji, title, message;
+  const fs = fullScore();
+  const totalC = fs.quiz.c + fs.cloze.c + fs.translate.c + fs.dialogue.c;
+  const totalT = fs.quiz.t + fs.cloze.t + fs.translate.t + fs.dialogue.t;
+  const pct = totalT ? Math.round(totalC / totalT * 100) : 0;
 
-  if (correct >= 5) {
-    emoji = '🏆';
-    title = 'Отлично! Великолепно!';
-    message = 'Ты отлично понял историю! Итальянский рынок тебя не напугал. Иван гордился бы тобой! 🍅';
-  } else if (correct >= 3) {
-    emoji = '🎉';
-    title = 'Хорошая работа!';
-    message = 'Ты понял основное содержание истории. Перечитай параграфы, где ошибся — и вперёд! 💪';
-  } else {
-    emoji = '💪';
-    title = 'Продолжай стараться!';
-    message = 'Начни историю заново — послушай итальянский текст ещё раз. С каждым разом становится лучше! 🇮🇹';
-  }
+  const emoji = pct >= 80 ? '🏆' : pct >= 60 ? '🎉' : '💪';
+  const title = pct >= 80 ? 'Отлично! / Excellent!' : pct >= 60 ? 'Хорошо! / Good job!' : 'Продолжай! / Keep going!';
+  const message = pct >= 80
+    ? 'Ты прошёл все задания урока! Иван гордился бы тобой. / You nailed Lesson 1! Ivan would be proud! 🍅'
+    : pct >= 60
+    ? 'Хорошая работа! Перечитай абзацы, где ошибся. / Good effort! Review the paragraphs where you slipped. 💪'
+    : 'Попробуй ещё раз — с каждым разом лучше! / Try again — every attempt makes you stronger! 🇮🇹';
+
+  const row = (label, s) => s.t > 0
+    ? `<div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0;border-bottom:1px solid #f0f0f0">
+        <span>${label}</span>
+        <span style="font-weight:700;color:${s.c===s.t?'#009246':'#ce2b37'}">${s.c}/${s.t}</span>
+       </div>` : '';
 
   return `
   <div class="slide-body">
     <div class="results-emoji">${emoji}</div>
     <div class="results-title">${title}</div>
-    <div class="results-score">${correct}<span> / ${total}</span></div>
+    <div class="results-score">${totalC}<span> / ${totalT}</span></div>
+    <div style="background:#f8f9fa;border-radius:10px;padding:10px 14px;margin:8px 0;font-size:13px">
+      ${row('❓ Вопросы / Comprehension', fs.quiz)}
+      ${row('✏️ Заполни пропуск / Fill blank', fs.cloze)}
+      ${row('🌐 Перевод вслух / Translate aloud', fs.translate)}
+      ${row('🎭 Диалог / Dialogue', fs.dialogue)}
+    </div>
     <div class="results-message">${message}</div>
+    <div style="font-size:12px;color:#aaa;text-align:center;margin-top:4px">📊 Результат сохранён в Google Sheets / Score saved to Sheets</div>
     <div class="results-actions">
-      <button class="btn-restart" onclick="restartStory()">🔄 Повторить</button>
-      <button class="btn-copy-slack" onclick="handleCopyResultsSlack(${correct}, ${total})">📋 Скопировать в Slack</button>
+      <button class="btn-restart" onclick="restartStory()">🔄 Повторить / Retry</button>
     </div>
   </div>`;
 }
 
 function attachResultsEvents() {
-  // Nothing extra needed
+  const fs = fullScore();
+  const totalC = fs.quiz.c + fs.cloze.c + fs.translate.c + fs.dialogue.c;
+  const totalT = fs.quiz.t + fs.cloze.t + fs.translate.t + fs.dialogue.t;
+  const d = new Date().toISOString().slice(0, 10);
+  const detail = `Q:${fs.quiz.c}/${fs.quiz.t} Fill:${fs.cloze.c}/${fs.cloze.t} Tr:${fs.translate.c}/${fs.translate.t} Dial:${fs.dialogue.c}/${fs.dialogue.t}`;
+  fetch('http://72.61.95.202:7891/score', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      date: d, lesson: 'Урок 1 — Il Mercato', quizType: `Story + Exercises (${detail})`,
+      score: totalC, total: totalT,
+      url: 'https://ilia-inovaflow.github.io/david-italiano/lesson-01-story.html'
+    })
+  }).catch(() => {});
 }
 
 function restartStory() {
