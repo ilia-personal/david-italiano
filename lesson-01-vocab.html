@@ -336,8 +336,9 @@ function showResult(){
   // Auto-submit score to server (fire & forget)
   const d=new Date().toLocaleDateString('ru-RU');
   fetch(SCORE_SERVER+'/score',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({date:d,lesson:'Lesson 1 — Il Mercato',quizType:'Vocabulary',
-      score,total:questions.length,wrongWords})}).catch(()=>{});
+    body:JSON.stringify({date:d,lesson:'Урок 1 — Il Mercato',quizType:'Vocabulary Quiz',
+      score,total:questions.length,wrongWords,
+      url:'https://ilia-inovaflow.github.io/david-italiano/lesson-01-vocab.html'})}).catch(()=>{});
 }
 
 function copyScore(){

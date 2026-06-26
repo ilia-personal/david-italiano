@@ -660,10 +660,17 @@
   <div class="header">
     <div class="header-top">
       <div class="header-title">🇮🇹 Il Mercato di Roma</div>
-      <div class="slide-counter" id="slideCounter">0 / 16</div>
+      <div class="slide-counter" id="slideCounter">0 / 26</div>
     </div>
     <div class="progress-bar-track">
       <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div style="margin-top:8px;display:flex;align-items:center;gap:8px">
+      <span style="font-size:12px;opacity:0.8">🔊</span>
+      <select id="voicePicker" onchange="setVoice(this.value)"
+        style="flex:1;font-size:12px;padding:4px 8px;border-radius:8px;border:none;background:rgba(255,255,255,0.2);color:#fff;outline:none">
+        <option>Загрузка голосов…</option>
+      </select>
     </div>
   </div>
 
@@ -1005,6 +1012,39 @@ function stopTTS() {
   }
 }
 
+// ── Voice selection ──────────────────────────
+let selectedVoice = null;
+
+function loadVoices() {
+  const voices = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('it'));
+  const sel = document.getElementById('voicePicker');
+  if (!sel || voices.length === 0) return;
+  sel.innerHTML = voices.map((v, i) =>
+    `<option value="${i}" ${selectedVoice && v.name === selectedVoice.name ? 'selected' : ''}>${v.name} (${v.lang})</option>`
+  ).join('');
+  // Auto-pick the most natural: prefer "Google" or "Alice" or first
+  if (!selectedVoice) {
+    const saved = localStorage.getItem('davidItalianoVoice');
+    const pick = voices.find(v => v.name === saved)
+      || voices.find(v => v.name.includes('Google'))
+      || voices.find(v => v.name === 'Alice')
+      || voices[0];
+    selectedVoice = pick;
+    sel.value = voices.indexOf(pick);
+  }
+}
+
+function setVoice(idx) {
+  const voices = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('it'));
+  selectedVoice = voices[parseInt(idx)] || null;
+  if (selectedVoice) localStorage.setItem('davidItalianoVoice', selectedVoice.name);
+}
+
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+  setTimeout(loadVoices, 300);
+}
+
 function playTTS(text, btn) {
   if (!window.speechSynthesis) {
     showToast('TTS недоступен в этом браузере');
@@ -1022,6 +1062,7 @@ function playTTS(text, btn) {
   utter.lang = 'it-IT';
   utter.rate = 0.82;
   utter.pitch = 1.0;
+  if (selectedVoice) utter.voice = selectedVoice;
 
   utter.onend = () => {
     ttsPlaying = false;
@@ -1838,7 +1879,18 @@ function renderResults() {
 }
 
 function attachResultsEvents() {
-  // Nothing extra needed
+  const correct = correctCount();
+  const total = totalQuizCount();
+  const d = new Date().toISOString().slice(0, 10);
+  fetch('http://72.61.95.202:7891/score', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      date: d, lesson: 'Урок 1 — Il Mercato', quizType: 'Story + Exercises',
+      score: correct, total,
+      url: 'https://ilia-inovaflow.github.io/david-italiano/lesson-01-story.html'
+    })
+  }).catch(() => {});
 }
 
 function restartStory() {
