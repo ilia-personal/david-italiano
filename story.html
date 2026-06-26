@@ -236,6 +236,66 @@
   }
   .btn-ask-mario:active { background: #f5f5f5; }
   .btn-ask-mario:hover { border-color: #009246; color: #009246; }
+  /* ── ECHO CHECK (Option 1) ── */
+  .btn-echo {
+    display: flex; align-items: center; gap: 6px;
+    background: #fff; color: #ce2b37; border: 2px solid #ce2b37;
+    border-radius: 10px; padding: 9px 14px; font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+  }
+  .btn-echo:active { background: #fde8ea; }
+  .btn-echo.recording { background: #ce2b37; color: #fff; animation: echoPulse 0.7s infinite; }
+  @keyframes echoPulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+  .echo-result {
+    display: none; margin-top: 12px; padding: 12px 14px;
+    background: #f8f9fa; border-radius: 10px; border-left: 3px solid #ce2b37;
+  }
+  .echo-words { font-size: 17px; line-height: 1.8; margin-bottom: 6px; }
+  .echo-w { display: inline-block; padding: 1px 3px; border-radius: 4px; margin: 1px; }
+  .echo-w.hit { background: #d4edda; color: #155724; font-weight: 700; }
+  .echo-w.miss { background: #f8d7da; color: #721c24; text-decoration: underline dotted; }
+  .echo-score { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .echo-heard { font-size: 12px; color: #888; font-style: italic; }
+  /* ── CLOZE SLIDE (Option 2) ── */
+  .cloze-label {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #e8eaf6; color: #3949ab; font-size: 12px; font-weight: 700;
+    letter-spacing: 0.6px; text-transform: uppercase;
+    border-radius: 8px; padding: 4px 10px; width: fit-content;
+  }
+  .cloze-sentence {
+    font-size: 22px; line-height: 1.5; color: #1a1a1a; font-weight: 400;
+    margin: 4px 0;
+  }
+  .cloze-blank {
+    display: inline-block; min-width: 120px; border-bottom: 3px solid #3949ab;
+    color: #3949ab; font-weight: 700; font-size: 22px; padding: 0 6px;
+    text-align: center; vertical-align: bottom;
+  }
+  .cloze-hint { font-size: 14px; color: #888; font-style: italic; margin-top: 2px; }
+  .cloze-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+  .btn-cloze-mic {
+    background: #fff; color: #3949ab; border: 2px solid #3949ab;
+    border-radius: 10px; padding: 12px 20px; font-size: 15px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;
+  }
+  .btn-cloze-mic.recording { background: #3949ab; color: #fff; animation: echoPulse 0.7s infinite; }
+  .cloze-input-row { display: flex; gap: 8px; width: 100%; }
+  .cloze-text-input {
+    flex: 1; border: 2px solid #ccc; border-radius: 10px; padding: 12px 14px;
+    font-size: 16px; outline: none;
+  }
+  .cloze-text-input:focus { border-color: #3949ab; }
+  .btn-cloze-submit {
+    background: #3949ab; color: #fff; border: none; border-radius: 10px;
+    padding: 12px 18px; font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+  .cloze-feedback {
+    margin-top: 10px; padding: 12px 14px; border-radius: 10px;
+    font-size: 16px; font-weight: 700; display: none;
+  }
+  .cloze-feedback.correct { background: #d4edda; color: #155724; border-left: 3px solid #28a745; }
+  .cloze-feedback.wrong   { background: #f8d7da; color: #721c24; border-left: 3px solid #dc3545; }
 
   /* ── QUIZ SLIDE ── */
   .quiz-label {
@@ -695,13 +755,43 @@ const SLIDES = [
     explanation: '💳 «Posso pagare con la carta?» — Can I pay by card? Sì!',
   },
 
-  // 16 — RESULTS
+  // 16 — CLOZE 1 (fill-in-the-blank by voice)
+  {
+    type: 'cloze',
+    before: 'Ivan è un russo che studia',
+    blank: "l'italiano",
+    after: 'a Roma.',
+    hint: '(итальянский язык)',
+    russian: 'Иван — русский, который изучает итальянский язык в Риме.',
+  },
+
+  // 17 — CLOZE 2
+  {
+    type: 'cloze',
+    before: '— Vorrei due',
+    blank: 'chili',
+    after: 'di pomodori, per favore.',
+    hint: '(килограмм)',
+    russian: '— Я бы хотел два килограмма помидоров, пожалуйста.',
+  },
+
+  // 18 — CLOZE 3
+  {
+    type: 'cloze',
+    before: '— Ha uno',
+    blank: 'sconto',
+    after: 'per me? — Sì, venti percento!',
+    hint: '(скидка)',
+    russian: '— Есть скидка для меня? — Да, двадцать процентов!',
+  },
+
+  // 19 — RESULTS
   {
     type: 'results',
   },
 ];
 
-const TOTAL_SLIDES = SLIDES.length; // 17 (indices 0–16)
+const TOTAL_SLIDES = SLIDES.length; // 20 (indices 0–19)
 const STORAGE_KEY = 'davidItaliano_story1';
 
 // ─────────────────────────────────────────────
@@ -904,6 +994,8 @@ function updateProgress() {
 function render(direction) {
   stopTTS();
   if (recognition) { try { recognition.stop(); } catch(e){} }
+  if (echoRecognition) { try { echoRecognition.stop(); } catch(e){} echoRecognition = null; }
+  if (clozeRecognition) { try { clozeRecognition.stop(); } catch(e){} clozeRecognition = null; }
 
   updateProgress();
 
@@ -940,6 +1032,8 @@ function render(direction) {
     if (!answered) {
       btnNext.disabled = true;
     }
+  } else if (slide.type === 'cloze') {
+    content.innerHTML = renderCloze(slide, currentSlide);
   } else if (slide.type === 'results') {
     content.innerHTML = renderResults();
     attachResultsEvents();
@@ -991,8 +1085,10 @@ function renderStory(slide, idx) {
     <div class="story-actions">
       <button class="btn-tts" id="ttsBtn" onclick="handleTTS(this, ${JSON.stringify(slide.italian)})">🔊 Слушать</button>
       <button class="btn-translate ${showTrans ? 'active' : ''}" id="transBtn" onclick="handleTranslate(${idx})">🇷🇺 Перевод</button>
+      <button class="btn-echo" id="echoBtn" onclick="handleEcho(${JSON.stringify(slide.italian)})">🎤 Повтори вслух</button>
       <button class="btn-ask-mario" onclick="handleAskMario(${JSON.stringify(slide.italian)})">💬 Спросить @mario</button>
     </div>
+    <div class="echo-result" id="echoResult"></div>
   </div>`;
 }
 
@@ -1025,6 +1121,85 @@ function handleAskMario(italianText) {
   }).catch(() => {
     showToast('Не удалось скопировать. Попробуй ещё раз.');
   });
+}
+
+// ── OPTION 1: Read-Aloud Echo Check ──────────
+let echoRecognition = null;
+
+function handleEcho(expectedText) {
+  const btn = document.getElementById('echoBtn');
+  const result = document.getElementById('echoResult');
+
+  if (echoRecognition) {
+    echoRecognition.stop();
+    echoRecognition = null;
+    btn.classList.remove('recording');
+    btn.textContent = '🎤 Повтори вслух';
+    return;
+  }
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { showToast('Микрофон не поддерживается в этом браузере'); return; }
+
+  echoRecognition = new SR();
+  echoRecognition.lang = 'it-IT';
+  echoRecognition.maxAlternatives = 5;
+  echoRecognition.interimResults = false;
+
+  btn.classList.add('recording');
+  btn.textContent = '⏹ Слушаю...';
+  result.style.display = 'none';
+
+  echoRecognition.onresult = (e) => {
+    const transcripts = [];
+    for (let i = 0; i < e.results[0].length; i++) transcripts.push(e.results[0][i].transcript);
+    showEchoFeedback(transcripts, expectedText);
+    btn.classList.remove('recording');
+    btn.textContent = '🎤 Повтори ещё раз';
+    echoRecognition = null;
+  };
+  echoRecognition.onerror = () => {
+    btn.classList.remove('recording');
+    btn.textContent = '🎤 Повтори вслух';
+    echoRecognition = null;
+    showToast('Не удалось распознать. Попробуй снова.');
+  };
+  echoRecognition.onend = () => {
+    if (echoRecognition) { echoRecognition = null; }
+    if (btn.classList.contains('recording')) {
+      btn.classList.remove('recording');
+      btn.textContent = '🎤 Повтори вслух';
+    }
+  };
+  echoRecognition.start();
+}
+
+function showEchoFeedback(transcripts, expected) {
+  const allHeard = transcripts.map(t => t.toLowerCase()).join(' ');
+  const cleanWord = w => w.replace(/[^a-zàèéìíîòóùú']/gi, '').toLowerCase();
+  const expectedWords = expected.split(/\s+/).map(w => cleanWord(w)).filter(w => w.length > 0);
+  const heardWords = allHeard.split(/\s+/).map(w => cleanWord(w));
+
+  const hits = expectedWords.map(w => {
+    if (w.length <= 1) return true;
+    return heardWords.some(h => h === w || h.includes(w) || w.includes(h));
+  });
+
+  const matchCount = hits.filter(Boolean).length;
+  const pct = Math.round(matchCount / expectedWords.length * 100);
+
+  const wordsHTML = expectedWords.map((w, i) =>
+    `<span class="echo-w ${hits[i] ? 'hit' : 'miss'}">${w}</span>`
+  ).join(' ');
+
+  const badge = pct >= 90 ? '🌟 Ottimo!' : pct >= 70 ? '👍 Bene!' : pct >= 50 ? '🔄 Ancora!' : '🔁 Прочитай ещё раз';
+  const result = document.getElementById('echoResult');
+  result.innerHTML = `
+    <div class="echo-words">${wordsHTML}</div>
+    <div class="echo-score">${badge} &nbsp;${pct}% слов совпало</div>
+    <div class="echo-heard">🎤 Распознал: "${transcripts[0] || '—'}"</div>
+  `;
+  result.style.display = 'block';
 }
 
 // ─────────────────────────────────────────────
@@ -1136,6 +1311,86 @@ function handleMic(slideIdx) {
 // ─────────────────────────────────────────────
 // RENDER: RESULTS
 // ─────────────────────────────────────────────
+// ── OPTION 2: Blank Fill by Voice (CLOZE) ────
+let clozeRecognition = null;
+const clozeAnswered = {};
+
+function renderCloze(slide, idx) {
+  const done = clozeAnswered.hasOwnProperty(idx);
+  const wasCorrect = clozeAnswered[idx];
+  const blankDisplay = done ? `<span class="cloze-blank" style="color:${wasCorrect?'#155724':'#721c24'}">${slide.blank}</span>` : `<span class="cloze-blank">?</span>`;
+  return `
+  <div class="slide-body">
+    <div class="cloze-label">✏️ Заполни пропуск</div>
+    <div class="cloze-sentence">${escHtml(slide.before)} ${blankDisplay} ${escHtml(slide.after)}</div>
+    <div class="cloze-hint">${escHtml(slide.hint)}</div>
+    <div class="translation-box visible" style="margin-top:8px">
+      <div class="translation-text">${escHtml(slide.russian)}</div>
+    </div>
+    ${done ? `<div class="cloze-feedback ${wasCorrect?'correct':'wrong'}" style="display:block">${wasCorrect ? '✅ Правильно! <em>' + slide.blank + '</em>' : '❌ Правильный ответ: <em>' + slide.blank + '</em>'}</div>` : `
+    <div class="cloze-actions">
+      <button class="btn-cloze-mic" id="clozeMicBtn" onclick="handleClozeVoice(${idx}, ${JSON.stringify(slide.blank)})">🎤 Скажи слово</button>
+    </div>
+    <div class="cloze-input-row" style="margin-top:8px">
+      <input class="cloze-text-input" id="clozeInput" type="text" placeholder="или напиши здесь…" autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter')handleClozeSubmit(${idx},${JSON.stringify(slide.blank)})">
+      <button class="btn-cloze-submit" onclick="handleClozeSubmit(${idx},${JSON.stringify(slide.blank)})">✓</button>
+    </div>
+    <div class="cloze-feedback" id="clozeFeedback"></div>
+    `}
+  </div>`;
+}
+
+function handleClozeVoice(idx, answer) {
+  const btn = document.getElementById('clozeMicBtn');
+  if (clozeRecognition) {
+    clozeRecognition.stop(); clozeRecognition = null;
+    btn.classList.remove('recording'); btn.textContent = '🎤 Скажи слово';
+    return;
+  }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { showToast('Микрофон не поддерживается в этом браузере'); return; }
+  clozeRecognition = new SR();
+  clozeRecognition.lang = 'it-IT';
+  clozeRecognition.maxAlternatives = 5;
+  btn.classList.add('recording'); btn.textContent = '⏹ Слушаю...';
+  clozeRecognition.onresult = (e) => {
+    const heard = [];
+    for (let i = 0; i < e.results[0].length; i++) heard.push(e.results[0][i].transcript.toLowerCase().trim());
+    const clean = w => w.replace(/[^a-zàèéìíîòóùú']/gi,'').toLowerCase();
+    const target = clean(answer);
+    const correct = heard.some(h => clean(h) === target || clean(h).includes(target) || target.includes(clean(h)));
+    clozeAnswered[idx] = correct;
+    btn.classList.remove('recording'); clozeRecognition = null;
+    showClozeResult(correct, answer);
+    if (correct) { setTimeout(() => { document.getElementById('slideContent').innerHTML = renderCloze(SLIDES[idx], idx); }, 800); }
+  };
+  clozeRecognition.onerror = () => {
+    btn.classList.remove('recording'); btn.textContent = '🎤 Скажи слово'; clozeRecognition = null;
+    showToast('Не удалось распознать. Попробуй снова.');
+  };
+  clozeRecognition.onend = () => { clozeRecognition = null; };
+  clozeRecognition.start();
+}
+
+function handleClozeSubmit(idx, answer) {
+  const input = document.getElementById('clozeInput');
+  if (!input) return;
+  const typed = input.value.trim().toLowerCase();
+  const clean = w => w.replace(/[^a-zàèéìíîòóùú']/gi,'').toLowerCase();
+  const correct = clean(typed) === clean(answer) || clean(answer).includes(clean(typed));
+  clozeAnswered[idx] = correct;
+  showClozeResult(correct, answer);
+  setTimeout(() => { document.getElementById('slideContent').innerHTML = renderCloze(SLIDES[idx], idx); }, 800);
+}
+
+function showClozeResult(correct, answer) {
+  const fb = document.getElementById('clozeFeedback');
+  if (!fb) return;
+  fb.className = 'cloze-feedback ' + (correct ? 'correct' : 'wrong');
+  fb.textContent = correct ? `✅ Правильно! "${answer}"` : `❌ Правильный ответ: "${answer}"`;
+  fb.style.display = 'block';
+}
+
 function renderResults() {
   const correct = correctCount();
   const total = totalQuizCount();
