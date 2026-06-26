@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>🇮🇹 David's Italiano — Урок 1</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #009246 0%, #009246 33%, #fff 33%, #fff 66%, #ce2b37 66%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+    max-width: 440px;
+    width: 100%;
+    overflow: hidden;
+  }
+  .header {
+    background: #009246;
+    color: #fff;
+    padding: 20px 24px 16px;
+    text-align: center;
+  }
+  .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .header .subtitle { font-size: 14px; opacity: 0.9; }
+  .progress-wrap { padding: 16px 24px 0; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 13px; color: #666; margin-bottom: 6px; }
+  .progress-bar { height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #009246; border-radius: 4px; transition: width 0.4s ease; }
+  .score-badge { background: #f0faf4; color: #009246; font-weight: 700; padding: 2px 10px; border-radius: 20px; font-size: 13px; }
+  .question-area { padding: 28px 24px 8px; text-align: center; }
+  .question-label { font-size: 14px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .word-display {
+    font-size: 38px;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+    line-height: 1.1;
+  }
+  .tts-btn {
+    background: none;
+    border: 2px solid #009246;
+    color: #009246;
+    border-radius: 20px;
+    padding: 6px 18px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 24px;
+    transition: all 0.2s;
+  }
+  .tts-btn:hover { background: #009246; color: #fff; }
+  .tts-btn:active { transform: scale(0.96); }
+  .options { display: flex; flex-direction: column; gap: 12px; padding: 0 24px 28px; }
+  .option-btn {
+    width: 100%;
+    padding: 18px 20px;
+    font-size: 18px;
+    font-weight: 600;
+    border-radius: 14px;
+    border: 2.5px solid #e0e0e0;
+    background: #fafafa;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: #222;
+    text-align: center;
+    position: relative;
+  }
+  .option-btn:hover { border-color: #009246; background: #f0faf4; transform: translateY(-1px); }
+  .option-btn:active { transform: scale(0.98); }
+  .option-btn.correct { background: #d4edda; border-color: #28a745; color: #155724; }
+  .option-btn.wrong { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+  .option-btn.reveal { background: #d4edda; border-color: #28a745; color: #155724; opacity: 0.7; }
+  .option-btn:disabled { cursor: default; transform: none; }
+  .feedback {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 700;
+    padding: 0 24px 20px;
+    min-height: 36px;
+  }
+  .feedback.ok { color: #28a745; }
+  .feedback.no { color: #dc3545; }
+  .result-screen { padding: 40px 24px; text-align: center; display: none; }
+  .result-screen .emoji { font-size: 72px; margin-bottom: 16px; }
+  .result-screen h2 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+  .result-screen .score-big { font-size: 64px; font-weight: 900; color: #009246; line-height: 1; margin: 16px 0; }
+  .result-screen .out-of { font-size: 20px; color: #888; }
+  .result-screen .msg { font-size: 17px; color: #555; margin: 16px 0 24px; }
+  .restart-btn {
+    background: #009246;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 16px 40px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.2s;
+  }
+  .restart-btn:hover { background: #007a38; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <h1>🇮🇹 David's Italiano</h1>
+    <div class="subtitle">Урок 1 · Il Mercato — Словарный квиз</div>
+  </div>
+
+  <div id="quiz-body">
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span id="q-counter">Вопрос 1 из 15</span>
+        <span class="score-badge">⭐ <span id="score-display">0</span> очков</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+
+    <div class="question-area">
+      <div class="question-label" id="question-label">Что значит слово?</div>
+      <div class="word-display" id="word-display">—</div>
+      <button class="tts-btn" id="tts-btn" onclick="speakWord()">🔊 Послушать</button>
+    </div>
+
+    <div class="options" id="options-container"></div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <div class="result-screen" id="result-screen">
+    <div class="emoji" id="result-emoji">🎉</div>
+    <h2 id="result-title">Отличная работа!</h2>
+    <div class="score-big" id="result-score">0</div>
+    <div class="out-of" id="result-out-of">из 15</div>
+    <div class="msg" id="result-msg"></div>
+    <button class="restart-btn" onclick="startQuiz()">🔄 Пройти ещё раз</button>
+  </div>
+</div>
+
+<script>
+const vocab = [
+  { it: "il mercato",     ru: "рынок",              en: "market",         wrong_ru: ["площадь","магазин"], wrong_it: ["il negozio","la piazza"] },
+  { it: "la bancarella",  ru: "лоток / прилавок",   en: "market stall",   wrong_ru: ["автобус","полка"],   wrong_it: ["lo scaffale","il treno"] },
+  { it: "il portafoglio", ru: "кошелёк",             en: "wallet",         wrong_ru: ["сумка","ключи"],     wrong_it: ["la borsa","le chiavi"] },
+  { it: "la banconota",   ru: "купюра / банкнота",   en: "banknote",       wrong_ru: ["монета","карточка"], wrong_it: ["la moneta","la carta"] },
+  { it: "il resto",       ru: "сдача",               en: "change (money)", wrong_ru: ["цена","налог"],      wrong_it: ["il prezzo","la tassa"] },
+  { it: "lo sconto",      ru: "скидка",              en: "discount",       wrong_ru: ["очередь","касса"],   wrong_it: ["la fila","la cassa"] },
+  { it: "lo scontrino",   ru: "чек",                 en: "receipt",        wrong_ru: ["билет","письмо"],    wrong_it: ["il biglietto","la lettera"] },
+  { it: "il commesso",    ru: "продавец",             en: "shop assistant", wrong_ru: ["покупатель","директор"], wrong_it: ["il cliente","il direttore"] },
+  { it: "il cartellino",  ru: "ценник",              en: "price tag",      wrong_ru: ["обложка","этикетка"], wrong_it: ["la copertina","l'etichetta"] },
+  { it: "spendere",       ru: "тратить",             en: "to spend",       wrong_ru: ["зарабатывать","платить"], wrong_it: ["guadagnare","pagare"] },
+  { it: "costare",        ru: "стоить",              en: "to cost",        wrong_ru: ["платить","менять"],  wrong_it: ["pagare","cambiare"] },
+  { it: "pesare",         ru: "взвешивать",           en: "to weigh",       wrong_ru: ["считать","измерять"], wrong_it: ["contare","misurare"] },
+  { it: "assaggiare",     ru: "пробовать на вкус",    en: "to taste",       wrong_ru: ["нюхать","смотреть"], wrong_it: ["annusare","guardare"] },
+  { it: "vorrei",         ru: "я бы хотел(а)",       en: "I would like",   wrong_ru: ["мне нравится","у меня есть"], wrong_it: ["mi piace","ho"] },
+  { it: "il chilo",       ru: "килограмм",            en: "kilogram",       wrong_ru: ["литр","метр"],       wrong_it: ["il litro","il metro"] },
+];
+
+let questions = [];
+let current = 0;
+let score = 0;
+let answered = false;
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function buildQuestions() {
+  questions = [];
+  const items = shuffle([...vocab]);
+  items.forEach((v, i) => {
+    if (i < 8) {
+      // Italian → Russian
+      const opts = shuffle([v.ru, v.wrong_ru[0], v.wrong_ru[1]]);
+      questions.push({ type: 'it2ru', word: v.it, answer: v.ru, options: opts, voice: v.it });
+    } else {
+      // Russian → Italian
+      const opts = shuffle([v.it, v.wrong_it[0], v.wrong_it[1]]);
+      questions.push({ type: 'ru2it', word: v.ru, answer: v.it, options: opts, voice: v.it });
+    }
+  });
+}
+
+function startQuiz() {
+  score = 0;
+  current = 0;
+  answered = false;
+  buildQuestions();
+  document.getElementById('quiz-body').style.display = '';
+  document.getElementById('result-screen').style.display = 'none';
+  showQuestion();
+}
+
+function showQuestion() {
+  const q = questions[current];
+  answered = false;
+  document.getElementById('q-counter').textContent = `Вопрос ${current + 1} из ${questions.length}`;
+  document.getElementById('score-display').textContent = score;
+  document.getElementById('progress-fill').style.width = `${(current / questions.length) * 100}%`;
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+
+  const label = q.type === 'it2ru' ? 'Что значит это слово?' : 'Как сказать по-итальянски?';
+  document.getElementById('question-label').textContent = label;
+  document.getElementById('word-display').textContent = q.word;
+  document.getElementById('tts-btn').style.display = q.type === 'it2ru' ? '' : 'none';
+
+  const container = document.getElementById('options-container');
+  container.innerHTML = '';
+  q.options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = opt;
+    btn.onclick = () => selectAnswer(opt, btn, q);
+    container.appendChild(btn);
+  });
+}
+
+function selectAnswer(chosen, btn, q) {
+  if (answered) return;
+  answered = true;
+  const correct = chosen === q.answer;
+  const fb = document.getElementById('feedback');
+
+  document.querySelectorAll('.option-btn').forEach(b => {
+    b.disabled = true;
+    if (b.textContent === q.answer) b.classList.add(correct ? 'correct' : 'reveal');
+  });
+
+  if (correct) {
+    btn.classList.add('correct');
+    score++;
+    fb.textContent = '✓ Правильно! Молодец!';
+    fb.className = 'feedback ok';
+  } else {
+    btn.classList.add('wrong');
+    fb.textContent = `✗ Ответ: ${q.answer}`;
+    fb.className = 'feedback no';
+  }
+
+  document.getElementById('score-display').textContent = score;
+
+  setTimeout(() => {
+    current++;
+    if (current >= questions.length) showResult();
+    else showQuestion();
+  }, correct ? 1400 : 2200);
+}
+
+function speakWord() {
+  const q = questions[current];
+  if ('speechSynthesis' in window) {
+    const u = new SpeechSynthesisUtterance(q.voice);
+    u.lang = 'it-IT';
+    u.rate = 0.85;
+    window.speechSynthesis.speak(u);
+  }
+}
+
+function showResult() {
+  document.getElementById('quiz-body').style.display = 'none';
+  const rs = document.getElementById('result-screen');
+  rs.style.display = '';
+  const pct = Math.round((score / questions.length) * 100);
+  document.getElementById('result-score').textContent = score;
+  document.getElementById('result-out-of').textContent = `из ${questions.length} правильных`;
+  let emoji, title, msg;
+  if (pct >= 90) { emoji='🏆'; title='Превосходно!'; msg='Отличный результат! Ты готов к следующему уроку.'; }
+  else if (pct >= 70) { emoji='🎉'; title='Хорошая работа!'; msg='Почти всё правильно. Повтори пару слов и ты всё запомнишь!'; }
+  else if (pct >= 50) { emoji='💪'; title='Неплохо!'; msg='Ещё немного практики — и слова запомнятся!'; }
+  else { emoji='📚'; title='Продолжай!'; msg='Перечитай историю и попробуй ещё раз. У тебя всё получится!'; }
+  document.getElementById('result-emoji').textContent = emoji;
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-msg').textContent = msg;
+}
+
+startQuiz();
+</script>
+</body>
+</html>
