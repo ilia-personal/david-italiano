@@ -1246,10 +1246,10 @@ function renderStory(slide, idx) {
       <div class="translation-text">${escHtml(slide.russian)}</div>
     </div>
     <div class="story-actions">
-      <button class="btn-tts" id="ttsBtn" onclick="handleTTS(this, ${JSON.stringify(slide.italian)})">🔊 Слушать</button>
+      <button class="btn-tts" id="ttsBtn" onclick="handleTTS(this, ${sq(slide.italian)})">🔊 Слушать</button>
       <button class="btn-translate ${showTrans ? 'active' : ''}" id="transBtn" onclick="handleTranslate(${idx})">🇷🇺 Перевод</button>
-      <button class="btn-echo" id="echoBtn" onclick="handleEcho(${JSON.stringify(slide.italian)})">🎤 Повтори вслух</button>
-      <button class="btn-ask-mario" onclick="handleAskMario(${JSON.stringify(slide.italian)})">💬 Спросить @mario</button>
+      <button class="btn-echo" id="echoBtn" onclick="handleEcho(${sq(slide.italian)})">🎤 Повтори вслух</button>
+      <button class="btn-ask-mario" onclick="handleAskMario(${sq(slide.italian)})">💬 Спросить @mario</button>
     </div>
     <div class="echo-result" id="echoResult"></div>
   </div>`;
@@ -1492,11 +1492,11 @@ function renderCloze(slide, idx) {
     </div>
     ${done ? `<div class="cloze-feedback ${wasCorrect?'correct':'wrong'}" style="display:block">${wasCorrect ? '✅ Правильно! <em>' + slide.blank + '</em>' : '❌ Правильный ответ: <em>' + slide.blank + '</em>'}</div>` : `
     <div class="cloze-actions">
-      <button class="btn-cloze-mic" id="clozeMicBtn" onclick="handleClozeVoice(${idx}, ${JSON.stringify(slide.blank)})">🎤 Скажи слово</button>
+      <button class="btn-cloze-mic" id="clozeMicBtn" onclick="handleClozeVoice(${idx}, ${sq(slide.blank)})">🎤 Скажи слово</button>
     </div>
     <div class="cloze-input-row" style="margin-top:8px">
-      <input class="cloze-text-input" id="clozeInput" type="text" placeholder="или напиши здесь…" autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter')handleClozeSubmit(${idx},${JSON.stringify(slide.blank)})">
-      <button class="btn-cloze-submit" onclick="handleClozeSubmit(${idx},${JSON.stringify(slide.blank)})">✓</button>
+      <input class="cloze-text-input" id="clozeInput" type="text" placeholder="или напиши здесь…" autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter')handleClozeSubmit(${idx},${sq(slide.blank)})">
+      <button class="btn-cloze-submit" onclick="handleClozeSubmit(${idx},${sq(slide.blank)})">✓</button>
     </div>
     <div class="cloze-feedback" id="clozeFeedback"></div>
     `}
@@ -1571,7 +1571,7 @@ function renderTranslate(slide, idx) {
       </div>
     ` : `
     <div class="translate-actions">
-      <button class="btn-translate-mic" id="translateMicBtn" onclick="handleTranslateMic(${idx}, ${JSON.stringify(slide.italian)}, ${JSON.stringify(slide.keywords)})">🎤 Говори по-итальянски</button>
+      <button class="btn-translate-mic" id="translateMicBtn" onclick="handleTranslateMic(${idx}, ${sq(slide.italian)}, ${sq(slide.keywords)})">🎤 Говори по-итальянски</button>
     </div>
     <div class="translate-feedback" id="translateFeedback_${idx}"></div>
     `}
@@ -1645,14 +1645,14 @@ function renderDialogue(slide, idx) {
     <div class="dialogue-role">${escHtml(slide.agentName)} говорит:</div>
     <div class="dialogue-line">"${escHtml(slide.agentLine)}"</div>
     <div style="font-size:13px;color:#888;font-style:italic;margin-bottom:8px">${escHtml(slide.agentRussian)}</div>
-    <button class="btn-dialogue-play" id="dialoguePlayBtn" onclick="playTTS(${JSON.stringify(slide.agentLine)}, this)">🔊 Слушать ещё раз</button>
+    <button class="btn-dialogue-play" id="dialoguePlayBtn" onclick="playTTS(${sq(slide.agentLine)}, this)">🔊 Слушать ещё раз</button>
     <div class="dialogue-my-role">🇮🇹 Твоя роль — Иван:</div>
     <div class="dialogue-ru">${escHtml(slide.myRussian)}</div>
     ${done ? `
       <div class="cloze-feedback correct" style="display:block">✅ Правильно! <em>${escHtml(slide.myLine)}</em></div>
     ` : `
     <div class="dialogue-actions">
-      <button class="btn-dialogue-mic" id="dialogueMicBtn" onclick="handleDialogueMic(${idx}, ${JSON.stringify(slide.myLine)}, ${JSON.stringify(slide.keywords)})">🎤 Ответь по-итальянски</button>
+      <button class="btn-dialogue-mic" id="dialogueMicBtn" onclick="handleDialogueMic(${idx}, ${sq(slide.myLine)}, ${sq(slide.keywords)})">🎤 Ответь по-итальянски</button>
     </div>
     <div class="translate-feedback" id="dialogueFeedback_${idx}"></div>
     `}
@@ -1722,13 +1722,13 @@ function renderRetell(slide, idx) {
     <div class="retell-prompt">${escHtml(slide.prompt)}</div>
     <div class="retell-subprompt">${escHtml(slide.subprompt)}</div>
     ${!done ? `
-    <button class="btn-retell-mic" id="retellMicBtn" onclick="handleRetellMic(${idx}, ${JSON.stringify(slide.keywords)})">🎤 Начни рассказывать</button>
+    <button class="btn-retell-mic" id="retellMicBtn" onclick="handleRetellMic(${idx}, ${sq(slide.keywords)})">🎤 Начни рассказывать</button>
     ` : ''}
     <div id="retellResult_${idx}" ${done ? '' : 'style="display:none"'}>
       <div class="retell-keywords" id="retellKeywords_${idx}"></div>
       <div class="retell-score-line" id="retellScore_${idx}"></div>
       <div class="retell-heard" id="retellHeard_${idx}"></div>
-      <button class="btn-retell-mic" style="margin-top:12px;background:#1565c0;color:#fff" onclick="resetRetell(${idx}, ${JSON.stringify(slide.keywords)})">🔄 Попробовать снова</button>
+      <button class="btn-retell-mic" style="margin-top:12px;background:#1565c0;color:#fff" onclick="resetRetell(${idx}, ${sq(slide.keywords)})">🔄 Попробовать снова</button>
     </div>
   </div>`;
 }
@@ -1879,6 +1879,10 @@ function escHtml(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
+
+// Safe JSON for use inside onclick="..." attributes — encodes " as &quot;
+// so the HTML attribute boundary isn't broken by the string delimiter.
+function sq(v) { return JSON.stringify(v).replace(/"/g, '&quot;'); }
 
 // ─────────────────────────────────────────────
 // INIT
