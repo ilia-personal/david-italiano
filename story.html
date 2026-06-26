@@ -837,17 +837,57 @@ function hasSpeechRecognition() {
   return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
 }
 
+// Match a spoken transcript (or array of alternatives) against quiz options.
+// Returns the matched option index (0/1/2) or -1.
+function matchVoice(transcripts, optionTexts) {
+  const LETTER = {
+    // Russian Cyrillic spoken letters
+    'а':0,'б':1,'в':2,
+    // Latin A/B/C
+    'a':0,'b':1,'c':2,
+    // Russian ordinals / numbers
+    'один':0,'первый':0,'первое':0,'first':0,'one':0,'1':0,
+    'два':1,'второй':1,'второе':1,'second':1,'two':1,'2':1,
+    'три':2,'третий':2,'третье':2,'third':2,'three':2,'3':2,
+  };
+
+  for (const raw of transcripts) {
+    const t = raw.toLowerCase().trim();
+    const words = t.split(/\s+/);
+
+    // 1. Letter/number match — check full string, first word, last word
+    for (const token of [t, words[0], words[words.length-1]]) {
+      if (token in LETTER) return LETTER[token];
+    }
+
+    // 2. Text match against each option
+    for (let i = 0; i < optionTexts.length; i++) {
+      const opt = optionTexts[i].toLowerCase();
+      const optWords = opt.split(/[\s/,]+/);
+      // Any meaningful option word appears in transcript?
+      if (optWords.some(w => w.length > 2 && t.includes(w))) return i;
+      // Transcript appears inside option?
+      if (t.length > 2 && opt.includes(t)) return i;
+    }
+  }
+  return -1;
+}
+
 function startRecognition(slideIndex, onResult) {
   if (!hasSpeechRecognition()) return;
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   recognition = new SR();
   recognition.lang = 'ru-RU';
   recognition.interimResults = false;
-  recognition.maxAlternatives = 3;
+  recognition.maxAlternatives = 5;  // collect more guesses to improve matching
 
   recognition.onresult = (e) => {
-    const transcript = e.results[0][0].transcript.toLowerCase().trim();
-    onResult(transcript);
+    // Collect ALL alternatives, not just the top one
+    const alts = [];
+    for (let i = 0; i < e.results[0].length; i++) {
+      alts.push(e.results[0][i].transcript);
+    }
+    onResult(alts);
   };
   recognition.onerror = (e) => {
     showToast('Ошибка микрофона: ' + e.error);
@@ -1100,27 +1140,16 @@ function handleMic(slideIdx) {
   micBtn.classList.add('recording');
   micBtn.innerHTML = '⏹ Остановить';
 
-  startRecognition(slideIdx, (transcript) => {
-    // Try to match transcript to option
+  startRecognition(slideIdx, (alts) => {
     const opts = slide.options;
-    let matched = -1;
-    // Check for letter (A/B/C in Russian or Latin)
-    const letterMap = { 'а': 0, 'a': 0, 'б': 1, 'b': 1, 'в': 2, 'c': 2 };
-    const firstChar = transcript.trim()[0];
-    if (firstChar && letterMap.hasOwnProperty(firstChar)) {
-      matched = letterMap[firstChar];
-    } else {
-      // Try to match option text loosely
-      opts.forEach((opt, i) => {
-        const optLower = opt.text.toLowerCase();
-        if (transcript.includes(optLower.split(' ')[0])) matched = i;
-      });
-    }
+    const optTexts = opts.map(o => o.text);
+    const matched = matchVoice(alts, optTexts);
 
     if (matched >= 0) {
-      handleQuizAnswer(slideIdx, matched);
+      showToast(`🎤 Распознал: "${alts[0]}"`, 1200);
+      setTimeout(() => handleQuizAnswer(slideIdx, matched), 400);
     } else {
-      showToast('Не распознал ответ. Скажи "А", "Б" или "В"', 3000);
+      showToast(`🎤 Слышу: "${alts[0]}" — скажи «А», «Б», «В» или само слово`, 3500);
     }
     recognition = null;
   });

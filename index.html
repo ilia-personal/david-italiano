@@ -55,6 +55,8 @@
   }
   .tts-btn:hover { background: #009246; color: #fff; }
   .tts-btn.playing { background: #009246; color: #fff; }
+  #mic-btn.recording { background: #ce2b37 !important; color: #fff !important; animation: pulse 0.8s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
   .options { display: flex; flex-direction: column; gap: 10px; padding: 0 20px 14px; }
   .option-btn {
     width: 100%; padding: 16px 18px; font-size: 17px; font-weight: 600;
@@ -127,6 +129,7 @@
       <div class="question-label" id="question-label">Что значит слово?</div>
       <div class="word-display" id="word-display">—</div>
       <button class="tts-btn" id="tts-btn" onclick="speakWord()">🔊 Послушать</button>
+      <button class="tts-btn" id="mic-btn" onclick="toggleVoice()" style="display:none;border-color:#ce2b37;color:#ce2b37;margin-left:8px">🎤 Голос</button>
     </div>
 
     <div class="options" id="options-container"></div>
@@ -233,6 +236,10 @@ function render(idx){
   document.getElementById('word-display').textContent=q.word;
   document.getElementById('tts-btn').style.display=q.type==='it2ru'?'':'none';
   document.getElementById('tts-btn').className='tts-btn';
+  const micEl=document.getElementById('mic-btn');
+  if(HAS_MIC && !reviewing){micEl.style.display='';micEl.textContent='🎤 Голос';micEl.classList.remove('recording');}
+  else{micEl.style.display='none';}
+  if(micRec){try{micRec.stop();}catch(e){} micRec=null;}
 
   const fb=document.getElementById('feedback');
   const container=document.getElementById('options-container');
@@ -341,6 +348,74 @@ function copyScore(){
     b.classList.add('copied');
   }).catch(()=>prompt('Скопируй вручную:',`Урок 1: ${score}/15`));
 }
+
+// ─── Voice recognition ───────────────────────────────────────────────
+let micRec = null;
+const HAS_MIC = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+
+function matchVoice(alts, optionTexts) {
+  const LETTER = {
+    'а':0,'б':1,'в':2,'a':0,'b':1,'c':2,
+    'один':0,'первый':0,'first':0,'one':0,'1':0,
+    'два':1,'второй':1,'second':1,'two':1,'2':1,
+    'три':2,'третий':2,'third':2,'three':2,'3':2,
+  };
+  for (const raw of alts) {
+    const t = raw.toLowerCase().trim();
+    const words = t.split(/\s+/);
+    for (const tok of [t, words[0], words[words.length-1]]) {
+      if (tok in LETTER) return LETTER[tok];
+    }
+    for (let i = 0; i < optionTexts.length; i++) {
+      const opt = optionTexts[i].toLowerCase();
+      const optWords = opt.split(/[\s/,()]+/);
+      if (optWords.some(w => w.length > 2 && t.includes(w))) return i;
+      if (t.length > 2 && opt.includes(t)) return i;
+    }
+  }
+  return -1;
+}
+
+function toggleVoice() {
+  if (answers[current]) return;
+  const btn = document.getElementById('mic-btn');
+  if (micRec) {
+    try { micRec.stop(); } catch(e){}
+    micRec = null;
+    btn.textContent = '🎤 Голос';
+    btn.classList.remove('recording');
+    return;
+  }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return;
+  micRec = new SR();
+  micRec.lang = 'ru-RU';
+  micRec.maxAlternatives = 5;
+  micRec.interimResults = false;
+  btn.textContent = '⏹ Стоп';
+  btn.classList.add('recording');
+  micRec.onresult = (e) => {
+    const alts = Array.from({length: e.results[0].length}, (_,i) => e.results[0][i].transcript);
+    const q = questions[current];
+    const idx = matchVoice(alts, q.options);
+    btn.textContent = '🎤 Голос';
+    btn.classList.remove('recording');
+    micRec = null;
+    if (idx >= 0) {
+      const optBtns = document.querySelectorAll('.option-btn');
+      if (optBtns[idx]) selectAnswer(q.options[idx], optBtns[idx], q, current);
+    } else {
+      const fb = document.getElementById('feedback');
+      fb.textContent = `🎤 Слышу: "${alts[0]}" — скажи «А», «Б», «В» или само слово`;
+      fb.className = 'feedback no';
+      setTimeout(() => { if(!answers[current]){fb.textContent='';fb.className='feedback';} }, 3000);
+    }
+  };
+  micRec.onerror = () => { btn.textContent='🎤 Голос'; btn.classList.remove('recording'); micRec=null; };
+  micRec.onend = () => { btn.classList.remove('recording'); if(micRec){micRec=null;btn.textContent='🎤 Голос';} };
+  micRec.start();
+}
+// ─────────────────────────────────────────────────────────────────────
 
 startQuiz();
 </script>
