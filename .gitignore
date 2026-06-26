@@ -1,1 +1,4 @@
 score-server.py
+server/score-server.py
+*.pyc
+__pycache__/
