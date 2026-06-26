@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Il Mercato di Roma — Урок 1</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #f0f4f8 0%, #e8edf3 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 12px 24px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.13), 0 2px 8px rgba(0,0,0,0.07);
+    width: 100%;
+    max-width: 440px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: #009246;
+    color: #fff;
+    padding: 14px 18px 10px;
+  }
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .header-title {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .slide-counter {
+    font-size: 13px;
+    opacity: 0.88;
+    font-weight: 600;
+  }
+  .progress-bar-track {
+    background: rgba(255,255,255,0.3);
+    border-radius: 6px;
+    height: 6px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    background: #fff;
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.4s ease;
+  }
+
+  /* ── SLIDE BODY ── */
+  .slide-body {
+    padding: 22px 20px 18px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  /* ── INTRO SLIDE ── */
+  .intro-flag {
+    font-size: 56px;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .intro-main-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #009246;
+    text-align: center;
+    line-height: 1.2;
+  }
+  .intro-subtitle-ru {
+    font-size: 14px;
+    color: #ce2b37;
+    font-weight: 600;
+    text-align: center;
+    margin-top: 4px;
+  }
+  .intro-lesson-tag {
+    background: #f0f9f4;
+    border: 1px solid #b2dfcc;
+    border-radius: 10px;
+    padding: 10px 14px;
+    text-align: center;
+    font-size: 14px;
+    color: #555;
+  }
+  .intro-lesson-tag strong { color: #009246; }
+  .intro-steps {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .intro-steps li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 15px;
+    color: #333;
+    line-height: 1.4;
+  }
+  .intro-steps li span.icon { font-size: 18px; flex-shrink: 0; }
+  .start-btn {
+    background: #009246;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 16px 24px;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 4px;
+    transition: background 0.2s, transform 0.1s;
+    letter-spacing: 0.4px;
+  }
+  .start-btn:active { background: #007a38; transform: scale(0.98); }
+
+  /* ── STORY SLIDE ── */
+  .story-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #e8f5ec;
+    color: #009246;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    border-radius: 8px;
+    padding: 4px 10px;
+    width: fit-content;
+  }
+  .italian-text {
+    font-size: 18px;
+    line-height: 1.65;
+    color: #1a1a1a;
+    font-weight: 400;
+  }
+  .dialogue .italian-text {
+    font-style: italic;
+  }
+  .translation-box {
+    background: #f8f9fa;
+    border-left: 3px solid #009246;
+    border-radius: 0 10px 10px 0;
+    padding: 12px 14px;
+    display: none;
+  }
+  .translation-box.visible { display: block; }
+  .translation-text {
+    font-size: 15px;
+    color: #555;
+    line-height: 1.55;
+    font-style: italic;
+  }
+  .story-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+  }
+  .btn-tts {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    color: #009246;
+    border: 2px solid #009246;
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .btn-tts:active { background: #e8f5ec; }
+  .btn-tts.playing {
+    background: #009246;
+    color: #fff;
+  }
+  .btn-translate {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    color: #555;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .btn-translate:active { background: #f0f0f0; }
+  .btn-translate.active {
+    border-color: #009246;
+    color: #009246;
+    background: #f0f9f4;
+  }
+  .btn-ask-mario {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: #fff;
+    color: #777;
+    border: 1.5px solid #ccc;
+    border-radius: 10px;
+    padding: 7px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .btn-ask-mario:active { background: #f5f5f5; }
+  .btn-ask-mario:hover { border-color: #009246; color: #009246; }
+
+  /* ── QUIZ SLIDE ── */
+  .quiz-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff3cd;
+    color: #856404;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    border-radius: 8px;
+    padding: 4px 10px;
+    width: fit-content;
+  }
+  .quiz-question {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1.4;
+  }
+  .quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .quiz-option {
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.18s;
+    line-height: 1.35;
+  }
+  .quiz-option:active { transform: scale(0.98); }
+  .quiz-option:hover:not(.correct):not(.wrong):not(.disabled) {
+    border-color: #009246;
+    background: #f0f9f4;
+  }
+  .quiz-option.correct {
+    background: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+    cursor: default;
+  }
+  .quiz-option.wrong {
+    background: #f8d7da;
+    border-color: #ce2b37;
+    color: #721c24;
+    cursor: default;
+  }
+  .quiz-option.disabled {
+    cursor: default;
+    opacity: 0.55;
+  }
+  .quiz-explanation {
+    background: #e8f5ec;
+    border-left: 3px solid #009246;
+    border-radius: 0 10px 10px 0;
+    padding: 12px 14px;
+    font-size: 15px;
+    color: #1a3a1a;
+    line-height: 1.5;
+    display: none;
+  }
+  .quiz-explanation.visible { display: block; }
+  .quiz-mic-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .btn-mic {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: #fff;
+    color: #ce2b37;
+    border: 1.5px solid #ce2b37;
+    border-radius: 10px;
+    padding: 7px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-mic:active { background: #f8d7da; }
+  .btn-mic.recording {
+    background: #ce2b37;
+    color: #fff;
+    animation: pulse-rec 1s infinite;
+  }
+  .mic-hint {
+    font-size: 12px;
+    color: #999;
+    font-style: italic;
+  }
+  @keyframes pulse-rec {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  /* ── RESULTS SLIDE ── */
+  .results-emoji {
+    font-size: 64px;
+    text-align: center;
+  }
+  .results-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #1a1a1a;
+    text-align: center;
+    line-height: 1.2;
+  }
+  .results-score {
+    text-align: center;
+    font-size: 48px;
+    font-weight: 900;
+    color: #009246;
+    line-height: 1;
+  }
+  .results-score span {
+    font-size: 22px;
+    color: #888;
+    font-weight: 600;
+  }
+  .results-message {
+    font-size: 16px;
+    color: #444;
+    text-align: center;
+    line-height: 1.5;
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .results-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .btn-restart {
+    background: #009246;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-restart:active { background: #007a38; }
+  .btn-copy-slack {
+    background: #fff;
+    color: #555;
+    border: 2px solid #ccc;
+    border-radius: 12px;
+    padding: 13px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-copy-slack:active { background: #f5f5f5; }
+
+  /* ── NAV FOOTER ── */
+  .nav-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px 16px;
+    border-top: 1px solid #eee;
+    gap: 10px;
+  }
+  .btn-nav {
+    background: #fff;
+    color: #009246;
+    border: 2px solid #009246;
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s;
+    min-width: 100px;
+    text-align: center;
+  }
+  .btn-nav:active { background: #e8f5ec; }
+  .btn-nav:disabled {
+    opacity: 0.3;
+    cursor: default;
+    border-color: #ccc;
+    color: #ccc;
+  }
+  .btn-nav.primary {
+    background: #009246;
+    color: #fff;
+  }
+  .btn-nav.primary:active { background: #007a38; }
+  .btn-nav.primary:disabled {
+    background: #ccc;
+    border-color: #ccc;
+    opacity: 0.5;
+  }
+  .btn-nav-next-locked {
+    display: none;
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #333;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 12px 20px;
+    border-radius: 12px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    z-index: 9999;
+    white-space: nowrap;
+    max-width: 90vw;
+    text-align: center;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ── ITALIAN FLAG STRIPE ── */
+  .flag-stripe {
+    display: flex;
+    height: 5px;
+  }
+  .flag-stripe div { flex: 1; }
+  .flag-stripe .green { background: #009246; }
+  .flag-stripe .white { background: #fff; }
+  .flag-stripe .red { background: #ce2b37; }
+
+  /* ── SLIDE TRANSITIONS ── */
+  .slide-wrapper {
+    animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(18px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes slideInBack {
+    from { opacity: 0; transform: translateX(-18px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  .slide-back {
+    animation: slideInBack 0.3s ease;
+  }
+</style>
+</head>
+<body>
+
+<div class="card" id="card">
+  <div class="flag-stripe">
+    <div class="green"></div>
+    <div class="white"></div>
+    <div class="red"></div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <div class="header-title">🇮🇹 Il Mercato di Roma</div>
+      <div class="slide-counter" id="slideCounter">0 / 16</div>
+    </div>
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- Slide content injected here -->
+  <div id="slideContent"></div>
+
+  <!-- Nav footer -->
+  <div class="nav-footer" id="navFooter">
+    <button class="btn-nav" id="btnBack" onclick="navigate(-1)">← Назад</button>
+    <button class="btn-nav primary" id="btnNext" onclick="navigate(1)">Далее →</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────
+// SLIDE DATA
+// ─────────────────────────────────────────────
+const SLIDES = [
+  // 0 — INTRO
+  {
+    type: 'intro',
+  },
+
+  // 1 — Para 1
+  {
+    type: 'story',
+    italian: 'Ivan è un russo che studia l\'italiano. Oggi è il suo primo giorno a Roma. Ha una lista della spesa e un foglio con le parole italiane più importanti.',
+    russian: 'Иван — русский, изучающий итальянский. Сегодня его первый день в Риме. У него есть список покупок и листок с важными итальянскими словами.',
+  },
+
+  // 2 — Para 2
+  {
+    type: 'story',
+    italian: 'Va al mercato di Campo de\' Fiori. Il mercato è grande e colorato. Ci sono molte bancarelle con frutta, verdura, formaggio e pane.',
+    russian: 'Он идёт на рынок Кампо-де-Фиори. Рынок большой и красочный. Там много прилавков с фруктами, овощами, сыром и хлебом.',
+  },
+
+  // 3 — Para 3
+  {
+    type: 'story',
+    dialogue: true,
+    italian: '«Buongiorno!» dice una signora anziana con un sorriso. Vende pomodori rossi e lucidi. «Quanto costano i pomodori?» chiede Ivan.',
+    russian: '«Добрый день!» — говорит пожилая дама с улыбкой. Она продаёт красные блестящие помидоры. «Сколько стоят помидоры?» — спрашивает Иван.',
+  },
+
+  // 4 — QUIZ 1
+  {
+    type: 'quiz',
+    quizIndex: 1,
+    question: 'Что продаёт пожилая дама?',
+    options: [
+      { label: 'A', text: 'Mele e arance' },
+      { label: 'B', text: 'Pomodori rossi' },
+      { label: 'C', text: 'Pane e formaggio' },
+    ],
+    correct: 1,
+    explanation: '🍅 «Vende pomodori rossi e lucidi» — She sells red, shiny tomatoes.',
+  },
+
+  // 5 — QUIZ 2
+  {
+    type: 'quiz',
+    quizIndex: 2,
+    question: 'Где находится рынок?',
+    options: [
+      { label: 'A', text: 'Piazza Navona' },
+      { label: 'B', text: 'Colosseo' },
+      { label: 'C', text: 'Campo de\' Fiori' },
+    ],
+    correct: 2,
+    explanation: '📍 «Va al mercato di Campo de\' Fiori» — famous Roman market square.',
+  },
+
+  // 6 — Para 4
+  {
+    type: 'story',
+    dialogue: true,
+    italian: '«Un euro al chilo, caro!» risponde la signora. Ivan non capisce bene: «Scusi… uno euro?» «Sì, sì! Vuole assaggiare?» Ivan assaggia un pomodoro. È delizioso!',
+    russian: '«Один евро за килограмм, дорогой!» — отвечает дама. Иван не очень понимает: «Простите… один евро?» «Да, да! Хотите попробовать?» Иван пробует помидор. Восхитительно!',
+  },
+
+  // 7 — Para 5
+  {
+    type: 'story',
+    dialogue: true,
+    italian: '«Sì, grazie! Vorrei due chili, per favore.» La signora pesa i pomodori. «Ecco! Due euro, prego.» Ivan apre il portafoglio. Ha solo una banconota da venti euro.',
+    russian: '«Да, спасибо! Я бы хотел два килограмма, пожалуйста.» Дама взвешивает помидоры. «Вот! Два евро, пожалуйста.» Иван открывает кошелёк. У него только купюра в двадцать евро.',
+  },
+
+  // 8 — QUIZ 3
+  {
+    type: 'quiz',
+    quizIndex: 3,
+    question: 'Сколько стоят два килограмма помидоров?',
+    options: [
+      { label: 'A', text: 'Uno euro' },
+      { label: 'B', text: 'Due euro' },
+      { label: 'C', text: 'Venti euro' },
+    ],
+    correct: 1,
+    explanation: '💰 «Un euro al chilo» × 2 chili = due euro.',
+  },
+
+  // 9 — QUIZ 4
+  {
+    type: 'quiz',
+    quizIndex: 4,
+    question: 'Какую купюру достаёт Иван из кошелька?',
+    options: [
+      { label: 'A', text: 'Cinque euro' },
+      { label: 'B', text: 'Dieci euro' },
+      { label: 'C', text: 'Venti euro' },
+    ],
+    correct: 2,
+    explanation: '💵 «Ha solo una banconota da venti euro» — He only has a 20€ note.',
+  },
+
+  // 10 — Para 6
+  {
+    type: 'story',
+    dialogue: true,
+    italian: '«Non c\'è problema!» sorride la signora. «Il resto è diciotto euro.» Ivan conta con attenzione: «Uno, due, cinque, dieci, diciotto euro. Grazie mille!» «Prego! Buona giornata!»',
+    russian: '«Нет проблем!» — улыбается дама. «Сдача — восемнадцать евро.» Иван внимательно считает: «Один, два, пять, десять, восемнадцать евро. Большое спасибо!» «Пожалуйста! Хорошего дня!»',
+  },
+
+  // 11 — Para 7
+  {
+    type: 'story',
+    italian: 'Poi Ivan va in un negozio di abbigliamento. Vede una camicia blu che gli piace molto. «Scusi, quanto costa questa camicia?» chiede al commesso. «Costa sessantacinque euro.»',
+    russian: 'Затем Иван идёт в магазин одежды. Он видит синюю рубашку, которая ему очень нравится. «Простите, сколько стоит эта рубашка?» — спрашивает он продавца. «Шестьдесят пять евро.»',
+  },
+
+  // 12 — QUIZ 5
+  {
+    type: 'quiz',
+    quizIndex: 5,
+    question: 'Какого цвета рубашка, которую видит Иван?',
+    options: [
+      { label: 'A', text: 'Rossa' },
+      { label: 'B', text: 'Verde' },
+      { label: 'C', text: 'Blu' },
+    ],
+    correct: 2,
+    explanation: '👔 «Vede una camicia blu» — He sees a blue shirt.',
+  },
+
+  // 13 — Para 8
+  {
+    type: 'story',
+    dialogue: true,
+    italian: 'Ivan guarda il cartellino del prezzo. È caro. «Ha uno sconto?» «Sì! Oggi c\'è il venti percento di sconto. Quindi costa cinquantadue euro.» Ivan sorride: «Va bene, la prendo! Posso pagare con la carta?» «Certo! Il Pos è qui.»',
+    russian: 'Иван смотрит на ценник. Дорого. «У вас есть скидка?» «Да! Сегодня скидка двадцать процентов. Значит, цена пятьдесят два евро.» Иван улыбается: «Хорошо, беру! Можно оплатить картой?» «Конечно! POS-терминал здесь.»',
+  },
+
+  // 14 — Para 9
+  {
+    type: 'story',
+    italian: 'Quella sera, Ivan scrive nel suo diario: «Oggi ho imparato moltissimo. Ho usato i numeri, ho parlato dei prezzi, ho chiesto uno sconto. La gente italiana è gentile e paziente. Domani torno al mercato!»',
+    russian: 'В тот вечер Иван пишет в своём дневнике: «Сегодня я узнал очень много. Я использовал числа, говорил о ценах, просил скидку. Итальянцы добрые и терпеливые. Завтра вернусь на рынок!»',
+  },
+
+  // 15 — QUIZ 6
+  {
+    type: 'quiz',
+    quizIndex: 6,
+    question: 'Как Иван платит за рубашку?',
+    options: [
+      { label: 'A', text: 'In contanti (наличными)' },
+      { label: 'B', text: 'Con la carta' },
+      { label: 'C', text: 'Con un assegno (чеком)' },
+    ],
+    correct: 1,
+    explanation: '💳 «Posso pagare con la carta?» — Can I pay by card? Sì!',
+  },
+
+  // 16 — RESULTS
+  {
+    type: 'results',
+  },
+];
+
+const TOTAL_SLIDES = SLIDES.length; // 17 (indices 0–16)
+const STORAGE_KEY = 'davidItaliano_story1';
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let currentSlide = 0;
+let quizAnswers = {};   // quizIndex -> boolean
+let translationState = {}; // slideIndex -> boolean
+let ttsPlaying = false;
+let ttsUtterance = null;
+let recognition = null;
+let isGoingBack = false;
+
+function totalQuizCount() {
+  return SLIDES.filter(s => s.type === 'quiz').length;
+}
+
+function correctCount() {
+  return Object.values(quizAnswers).filter(Boolean).length;
+}
+
+// ─────────────────────────────────────────────
+// PERSISTENCE
+// ─────────────────────────────────────────────
+function saveProgress() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      currentSlide,
+      quizAnswers,
+      translationState,
+    }));
+  } catch(e) {}
+}
+
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    currentSlide = data.currentSlide || 0;
+    quizAnswers = data.quizAnswers || {};
+    translationState = data.translationState || {};
+  } catch(e) {}
+}
+
+// ─────────────────────────────────────────────
+// TTS
+// ─────────────────────────────────────────────
+function stopTTS() {
+  if (window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+  }
+  ttsPlaying = false;
+  const btn = document.getElementById('ttsBtn');
+  if (btn) {
+    btn.classList.remove('playing');
+    btn.innerHTML = '🔊 Слушать';
+  }
+}
+
+function playTTS(text, btn) {
+  if (!window.speechSynthesis) {
+    showToast('TTS недоступен в этом браузере');
+    return;
+  }
+  if (ttsPlaying) {
+    stopTTS();
+    return;
+  }
+  ttsPlaying = true;
+  btn.classList.add('playing');
+  btn.innerHTML = '⏹ Стоп';
+
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'it-IT';
+  utter.rate = 0.82;
+  utter.pitch = 1.0;
+
+  utter.onend = () => {
+    ttsPlaying = false;
+    if (btn && document.body.contains(btn)) {
+      btn.classList.remove('playing');
+      btn.innerHTML = '🔊 Слушать';
+    }
+  };
+  utter.onerror = () => {
+    ttsPlaying = false;
+    if (btn && document.body.contains(btn)) {
+      btn.classList.remove('playing');
+      btn.innerHTML = '🔊 Слушать';
+    }
+  };
+
+  ttsUtterance = utter;
+  window.speechSynthesis.speak(utter);
+}
+
+// ─────────────────────────────────────────────
+// TOAST
+// ─────────────────────────────────────────────
+let toastTimer = null;
+function showToast(msg, duration = 3500) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), duration);
+}
+
+// ─────────────────────────────────────────────
+// CLIPBOARD
+// ─────────────────────────────────────────────
+function copyToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(text);
+  }
+  // fallback
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  return Promise.resolve();
+}
+
+// ─────────────────────────────────────────────
+// SPEECH RECOGNITION
+// ─────────────────────────────────────────────
+function hasSpeechRecognition() {
+  return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+}
+
+function startRecognition(slideIndex, onResult) {
+  if (!hasSpeechRecognition()) return;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'ru-RU';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 3;
+
+  recognition.onresult = (e) => {
+    const transcript = e.results[0][0].transcript.toLowerCase().trim();
+    onResult(transcript);
+  };
+  recognition.onerror = (e) => {
+    showToast('Ошибка микрофона: ' + e.error);
+    const micBtn = document.getElementById('micBtn');
+    if (micBtn) {
+      micBtn.classList.remove('recording');
+      micBtn.innerHTML = '🎤 Ответить голосом';
+    }
+  };
+  recognition.onend = () => {
+    const micBtn = document.getElementById('micBtn');
+    if (micBtn) {
+      micBtn.classList.remove('recording');
+      micBtn.innerHTML = '🎤 Ответить голосом';
+    }
+  };
+  recognition.start();
+}
+
+// ─────────────────────────────────────────────
+// PROGRESS UPDATE
+// ─────────────────────────────────────────────
+function updateProgress() {
+  const total = TOTAL_SLIDES - 1; // exclude intro and results from denominator?
+  // Show progress as currentSlide out of 16 (total non-intro, non-results)
+  const displayCurrent = Math.max(0, currentSlide);
+  const displayTotal = TOTAL_SLIDES - 1;
+  document.getElementById('slideCounter').textContent = displayCurrent + ' / ' + displayTotal;
+  const pct = (displayCurrent / displayTotal) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+// ─────────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────────
+function render(direction) {
+  stopTTS();
+  if (recognition) { try { recognition.stop(); } catch(e){} }
+
+  updateProgress();
+
+  const slide = SLIDES[currentSlide];
+  const content = document.getElementById('slideContent');
+  const navFooter = document.getElementById('navFooter');
+  const btnBack = document.getElementById('btnBack');
+  const btnNext = document.getElementById('btnNext');
+
+  // Animation class
+  content.className = direction === 'back' ? 'slide-back' : 'slide-wrapper';
+  // Force reflow
+  void content.offsetWidth;
+
+  // Nav defaults
+  navFooter.style.display = 'flex';
+  btnBack.disabled = currentSlide === 0;
+  btnNext.disabled = false;
+  btnNext.textContent = 'Далее →';
+  btnNext.classList.add('primary');
+
+  if (slide.type === 'intro') {
+    content.innerHTML = renderIntro();
+    navFooter.style.display = 'none';
+  } else if (slide.type === 'story') {
+    content.innerHTML = renderStory(slide, currentSlide);
+    attachStoryEvents(slide, currentSlide);
+    // Hide next button (nav is shown, user can go forward freely)
+  } else if (slide.type === 'quiz') {
+    content.innerHTML = renderQuiz(slide, currentSlide);
+    attachQuizEvents(slide, currentSlide);
+    // Lock next until answered
+    const answered = quizAnswers.hasOwnProperty(slide.quizIndex);
+    if (!answered) {
+      btnNext.disabled = true;
+    }
+  } else if (slide.type === 'results') {
+    content.innerHTML = renderResults();
+    attachResultsEvents();
+    btnBack.disabled = true;
+    btnNext.disabled = true;
+    navFooter.style.display = 'none';
+  }
+
+  saveProgress();
+}
+
+// ─────────────────────────────────────────────
+// RENDER: INTRO
+// ─────────────────────────────────────────────
+function renderIntro() {
+  return `
+  <div class="slide-body">
+    <div class="intro-flag">🇮🇹</div>
+    <div class="intro-main-title">Il Mercato di Roma</div>
+    <div class="intro-subtitle-ru">История с проверкой понимания</div>
+    <div class="intro-lesson-tag"><strong>Урок 1</strong> · 10 параграфов · 6 вопросов</div>
+    <ul class="intro-steps">
+      <li><span class="icon">🔊</span><span>Нажми «Слушать» — итальянский текст озвучивается</span></li>
+      <li><span class="icon">🇷🇺</span><span>«Перевод» покажет русский текст</span></li>
+      <li><span class="icon">❓</span><span>После каждого эпизода — вопрос на понимание</span></li>
+      <li><span class="icon">💬</span><span>«Спросить @mario» — скопируй и вставь в Slack</span></li>
+    </ul>
+    <button class="start-btn" onclick="startStory()">Начать →</button>
+  </div>`;
+}
+
+function startStory() {
+  currentSlide = 1;
+  render('forward');
+}
+
+// ─────────────────────────────────────────────
+// RENDER: STORY
+// ─────────────────────────────────────────────
+function renderStory(slide, idx) {
+  const showTrans = translationState[idx] || false;
+  return `
+  <div class="slide-body">
+    <div class="story-label">📖 История</div>
+    <div class="italian-text ${slide.dialogue ? 'dialogue' : ''}">${escHtml(slide.italian)}</div>
+    <div class="translation-box ${showTrans ? 'visible' : ''}" id="translationBox">
+      <div class="translation-text">${escHtml(slide.russian)}</div>
+    </div>
+    <div class="story-actions">
+      <button class="btn-tts" id="ttsBtn" onclick="handleTTS(this, ${JSON.stringify(slide.italian)})">🔊 Слушать</button>
+      <button class="btn-translate ${showTrans ? 'active' : ''}" id="transBtn" onclick="handleTranslate(${idx})">🇷🇺 Перевод</button>
+      <button class="btn-ask-mario" onclick="handleAskMario(${JSON.stringify(slide.italian)})">💬 Спросить @mario</button>
+    </div>
+  </div>`;
+}
+
+function attachStoryEvents(slide, idx) {
+  // Nothing extra needed — all via onclick
+}
+
+function handleTTS(btn, text) {
+  playTTS(text, btn);
+}
+
+function handleTranslate(idx) {
+  translationState[idx] = !translationState[idx];
+  const box = document.getElementById('translationBox');
+  const btn = document.getElementById('transBtn');
+  if (translationState[idx]) {
+    box.classList.add('visible');
+    btn.classList.add('active');
+  } else {
+    box.classList.remove('visible');
+    btn.classList.remove('active');
+  }
+  saveProgress();
+}
+
+function handleAskMario(italianText) {
+  const msg = `💬 @mario — вопрос к уроку 1:\n\n${italianText}\n\nВопрос: `;
+  copyToClipboard(msg).then(() => {
+    showToast('Скопировано! Открой Slack и вставь в #david-italiano', 4000);
+  }).catch(() => {
+    showToast('Не удалось скопировать. Попробуй ещё раз.');
+  });
+}
+
+// ─────────────────────────────────────────────
+// RENDER: QUIZ
+// ─────────────────────────────────────────────
+function renderQuiz(slide, idx) {
+  const answered = quizAnswers.hasOwnProperty(slide.quizIndex);
+  const chosen = answered ? quizAnswers[slide.quizIndex + '_chosen'] : null;
+
+  let optionsHTML = slide.options.map((opt, i) => {
+    let cls = 'quiz-option';
+    if (answered) {
+      if (i === slide.correct) cls += ' correct';
+      else if (i === chosen && i !== slide.correct) cls += ' wrong';
+      else cls += ' disabled';
+    }
+    return `<button class="${cls}" ${answered ? 'disabled' : ''} onclick="handleQuizAnswer(${idx}, ${i})">${opt.label}) ${escHtml(opt.text)}</button>`;
+  }).join('');
+
+  const micVisible = hasSpeechRecognition() && !answered;
+  const micHTML = micVisible ? `
+    <div class="quiz-mic-row">
+      <button class="btn-mic" id="micBtn" onclick="handleMic(${idx})">🎤 Ответить голосом</button>
+      <span class="mic-hint">или говори ответ вслух</span>
+    </div>` : '';
+
+  return `
+  <div class="slide-body">
+    <div class="quiz-label">❓ Вопрос ${slide.quizIndex} / ${totalQuizCount()}</div>
+    <div class="quiz-question">${escHtml(slide.question)}</div>
+    <div class="quiz-options" id="quizOptions">${optionsHTML}</div>
+    ${micHTML}
+    <div class="quiz-explanation ${answered ? 'visible' : ''}" id="quizExplanation">${escHtml(slide.explanation)}</div>
+  </div>`;
+}
+
+function attachQuizEvents(slide, idx) {
+  // Nothing extra — handled via onclick
+}
+
+function handleQuizAnswer(slideIdx, chosenIdx) {
+  const slide = SLIDES[slideIdx];
+  if (quizAnswers.hasOwnProperty(slide.quizIndex)) return;
+
+  const isCorrect = chosenIdx === slide.correct;
+  quizAnswers[slide.quizIndex] = isCorrect;
+  quizAnswers[slide.quizIndex + '_chosen'] = chosenIdx;
+
+  // Update option styles
+  const opts = document.querySelectorAll('.quiz-option');
+  opts.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === slide.correct) btn.classList.add('correct');
+    else if (i === chosenIdx) btn.classList.add('wrong');
+    else btn.classList.add('disabled');
+  });
+
+  // Show explanation
+  const expBox = document.getElementById('quizExplanation');
+  if (expBox) expBox.classList.add('visible');
+
+  // Unlock next
+  document.getElementById('btnNext').disabled = false;
+
+  // Remove mic button
+  const micRow = document.querySelector('.quiz-mic-row');
+  if (micRow) micRow.remove();
+
+  if (isCorrect) {
+    showToast('✅ Правильно!', 2000);
+  } else {
+    showToast('❌ Не совсем — смотри объяснение', 2500);
+  }
+
+  saveProgress();
+}
+
+function handleMic(slideIdx) {
+  const micBtn = document.getElementById('micBtn');
+  if (!micBtn) return;
+  const slide = SLIDES[slideIdx];
+
+  if (recognition) {
+    try { recognition.stop(); } catch(e) {}
+    recognition = null;
+    micBtn.classList.remove('recording');
+    micBtn.innerHTML = '🎤 Ответить голосом';
+    return;
+  }
+
+  micBtn.classList.add('recording');
+  micBtn.innerHTML = '⏹ Остановить';
+
+  startRecognition(slideIdx, (transcript) => {
+    // Try to match transcript to option
+    const opts = slide.options;
+    let matched = -1;
+    // Check for letter (A/B/C in Russian or Latin)
+    const letterMap = { 'а': 0, 'a': 0, 'б': 1, 'b': 1, 'в': 2, 'c': 2 };
+    const firstChar = transcript.trim()[0];
+    if (firstChar && letterMap.hasOwnProperty(firstChar)) {
+      matched = letterMap[firstChar];
+    } else {
+      // Try to match option text loosely
+      opts.forEach((opt, i) => {
+        const optLower = opt.text.toLowerCase();
+        if (transcript.includes(optLower.split(' ')[0])) matched = i;
+      });
+    }
+
+    if (matched >= 0) {
+      handleQuizAnswer(slideIdx, matched);
+    } else {
+      showToast('Не распознал ответ. Скажи "А", "Б" или "В"', 3000);
+    }
+    recognition = null;
+  });
+}
+
+// ─────────────────────────────────────────────
+// RENDER: RESULTS
+// ─────────────────────────────────────────────
+function renderResults() {
+  const correct = correctCount();
+  const total = totalQuizCount();
+  let emoji, title, message;
+
+  if (correct >= 5) {
+    emoji = '🏆';
+    title = 'Отлично! Великолепно!';
+    message = 'Ты отлично понял историю! Итальянский рынок тебя не напугал. Иван гордился бы тобой! 🍅';
+  } else if (correct >= 3) {
+    emoji = '🎉';
+    title = 'Хорошая работа!';
+    message = 'Ты понял основное содержание истории. Перечитай параграфы, где ошибся — и вперёд! 💪';
+  } else {
+    emoji = '💪';
+    title = 'Продолжай стараться!';
+    message = 'Начни историю заново — послушай итальянский текст ещё раз. С каждым разом становится лучше! 🇮🇹';
+  }
+
+  return `
+  <div class="slide-body">
+    <div class="results-emoji">${emoji}</div>
+    <div class="results-title">${title}</div>
+    <div class="results-score">${correct}<span> / ${total}</span></div>
+    <div class="results-message">${message}</div>
+    <div class="results-actions">
+      <button class="btn-restart" onclick="restartStory()">🔄 Повторить</button>
+      <button class="btn-copy-slack" onclick="handleCopyResultsSlack(${correct}, ${total})">📋 Скопировать в Slack</button>
+    </div>
+  </div>`;
+}
+
+function attachResultsEvents() {
+  // Nothing extra needed
+}
+
+function restartStory() {
+  quizAnswers = {};
+  translationState = {};
+  currentSlide = 0;
+  saveProgress();
+  render('forward');
+}
+
+function handleCopyResultsSlack(correct, total) {
+  const msg = `🇮🇹 Il Mercato di Roma — Урок 1\nРезультат: ${correct}/${total} правильных ответов`;
+  copyToClipboard(msg).then(() => {
+    showToast('Скопировано! Вставь в Slack 📋', 3000);
+  }).catch(() => {
+    showToast('Не удалось скопировать');
+  });
+}
+
+// ─────────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────────
+function navigate(dir) {
+  const newIdx = currentSlide + dir;
+  if (newIdx < 0 || newIdx >= TOTAL_SLIDES) return;
+  currentSlide = newIdx;
+  render(dir < 0 ? 'back' : 'forward');
+}
+
+// ─────────────────────────────────────────────
+// UTILS
+// ─────────────────────────────────────────────
+function escHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+loadProgress();
+render('forward');
+</script>
+</body>
+</html>

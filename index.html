@@ -8,7 +8,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #009246 0%, #009246 33%, #fff 33%, #fff 66%, #ce2b37 66%);
+    background: linear-gradient(160deg, #009246 0%, #009246 30%, #ffffff 30%, #ffffff 70%, #ce2b37 70%);
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -26,87 +26,84 @@
   .header {
     background: #009246;
     color: #fff;
-    padding: 20px 24px 16px;
+    padding: 18px 24px 14px;
     text-align: center;
   }
-  .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-  .header .subtitle { font-size: 14px; opacity: 0.9; }
-  .progress-wrap { padding: 16px 24px 0; }
-  .progress-label { display: flex; justify-content: space-between; font-size: 13px; color: #666; margin-bottom: 6px; }
-  .progress-bar { height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
+  .header h1 { font-size: 20px; font-weight: 700; margin-bottom: 3px; }
+  .header .subtitle { font-size: 13px; opacity: 0.9; }
+  .progress-wrap { padding: 14px 20px 0; }
+  .progress-meta { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #666; margin-bottom: 6px; }
+  .score-badge { background: #f0faf4; color: #009246; font-weight: 700; padding: 3px 10px; border-radius: 20px; font-size: 13px; }
+  .progress-bar { height: 7px; background: #eee; border-radius: 4px; overflow: hidden; margin-bottom: 4px; }
   .progress-fill { height: 100%; background: #009246; border-radius: 4px; transition: width 0.4s ease; }
-  .score-badge { background: #f0faf4; color: #009246; font-weight: 700; padding: 2px 10px; border-radius: 20px; font-size: 13px; }
-  .question-area { padding: 28px 24px 8px; text-align: center; }
-  .question-label { font-size: 14px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-  .word-display {
-    font-size: 38px;
-    font-weight: 800;
-    color: #1a1a1a;
-    margin-bottom: 8px;
-    line-height: 1.1;
+  .dots { display: flex; gap: 4px; flex-wrap: wrap; padding: 8px 20px 0; }
+  .dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: #eee; border: 2px solid #ddd;
+    transition: all 0.2s; cursor: pointer;
   }
+  .dot.current { border-color: #009246; background: #fff; box-shadow: 0 0 0 2px #009246; }
+  .dot.correct { background: #28a745; border-color: #28a745; }
+  .dot.wrong { background: #dc3545; border-color: #dc3545; }
+  .question-area { padding: 22px 24px 8px; text-align: center; }
+  .question-label { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .word-display { font-size: 36px; font-weight: 800; color: #1a1a1a; margin-bottom: 10px; line-height: 1.1; }
   .tts-btn {
-    background: none;
-    border: 2px solid #009246;
-    color: #009246;
-    border-radius: 20px;
-    padding: 6px 18px;
-    font-size: 14px;
-    cursor: pointer;
-    margin-bottom: 24px;
-    transition: all 0.2s;
+    background: none; border: 2px solid #009246; color: #009246;
+    border-radius: 20px; padding: 5px 16px; font-size: 13px;
+    cursor: pointer; margin-bottom: 20px; transition: all 0.2s;
   }
   .tts-btn:hover { background: #009246; color: #fff; }
-  .tts-btn:active { transform: scale(0.96); }
-  .options { display: flex; flex-direction: column; gap: 12px; padding: 0 24px 28px; }
+  .tts-btn.playing { background: #009246; color: #fff; }
+  .options { display: flex; flex-direction: column; gap: 10px; padding: 0 20px 14px; }
   .option-btn {
-    width: 100%;
-    padding: 18px 20px;
-    font-size: 18px;
-    font-weight: 600;
-    border-radius: 14px;
-    border: 2.5px solid #e0e0e0;
-    background: #fafafa;
-    cursor: pointer;
-    transition: all 0.15s;
-    color: #222;
-    text-align: center;
-    position: relative;
+    width: 100%; padding: 16px 18px; font-size: 17px; font-weight: 600;
+    border-radius: 14px; border: 2.5px solid #e0e0e0; background: #fafafa;
+    cursor: pointer; transition: all 0.15s; color: #222; text-align: center;
   }
-  .option-btn:hover { border-color: #009246; background: #f0faf4; transform: translateY(-1px); }
-  .option-btn:active { transform: scale(0.98); }
-  .option-btn.correct { background: #d4edda; border-color: #28a745; color: #155724; }
-  .option-btn.wrong { background: #f8d7da; border-color: #dc3545; color: #721c24; }
-  .option-btn.reveal { background: #d4edda; border-color: #28a745; color: #155724; opacity: 0.7; }
-  .option-btn:disabled { cursor: default; transform: none; }
-  .feedback {
-    text-align: center;
-    font-size: 20px;
-    font-weight: 700;
-    padding: 0 24px 20px;
-    min-height: 36px;
-  }
+  .option-btn:hover:not(:disabled) { border-color: #009246; background: #f0faf4; transform: translateY(-1px); }
+  .option-btn:active:not(:disabled) { transform: scale(0.98); }
+  .option-btn.correct  { background: #d4edda; border-color: #28a745; color: #155724; }
+  .option-btn.wrong    { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+  .option-btn.reveal   { background: #d4edda; border-color: #28a745; color: #155724; opacity: 0.75; }
+  .option-btn.r-correct { background: #d4edda; border-color: #28a745; color: #155724; }
+  .option-btn.r-wrong   { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+  .option-btn.r-reveal  { background: #e8f5e9; border-color: #28a745; color: #155724; opacity: 0.8; }
+  .option-btn:disabled { cursor: default; transform: none !important; }
+  .feedback { text-align: center; font-size: 18px; font-weight: 700; padding: 2px 20px 12px; min-height: 30px; }
   .feedback.ok { color: #28a745; }
   .feedback.no { color: #dc3545; }
-  .result-screen { padding: 40px 24px; text-align: center; display: none; }
-  .result-screen .emoji { font-size: 72px; margin-bottom: 16px; }
-  .result-screen h2 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
-  .result-screen .score-big { font-size: 64px; font-weight: 900; color: #009246; line-height: 1; margin: 16px 0; }
-  .result-screen .out-of { font-size: 20px; color: #888; }
-  .result-screen .msg { font-size: 17px; color: #555; margin: 16px 0 24px; }
-  .restart-btn {
-    background: #009246;
-    color: #fff;
-    border: none;
-    border-radius: 14px;
-    padding: 16px 40px;
-    font-size: 18px;
-    font-weight: 700;
-    cursor: pointer;
-    width: 100%;
-    transition: background 0.2s;
+  .nav-row { display: flex; gap: 10px; padding: 0 20px 20px; }
+  .nav-btn {
+    flex: 1; padding: 14px; font-size: 16px; font-weight: 700;
+    border-radius: 14px; border: none; cursor: pointer; transition: all 0.15s;
   }
-  .restart-btn:hover { background: #007a38; }
+  .nav-btn:active { transform: scale(0.97); }
+  .btn-prev { background: #f0f0f0; color: #555; }
+  .btn-prev:hover:not(:disabled) { background: #e0e0e0; }
+  .btn-prev:disabled { opacity: 0.35; cursor: default; transform: none; }
+  .btn-next { background: #009246; color: #fff; }
+  .btn-next:hover { background: #007a38; }
+  .btn-next.hidden { display: none; }
+  .result-screen { padding: 36px 24px; text-align: center; display: none; }
+  .result-screen .emoji { font-size: 68px; margin-bottom: 12px; }
+  .result-screen h2 { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+  .score-big { font-size: 60px; font-weight: 900; color: #009246; line-height: 1; margin: 14px 0 4px; }
+  .out-of { font-size: 16px; color: #888; margin-bottom: 14px; }
+  .result-msg { font-size: 16px; color: #555; margin-bottom: 22px; line-height: 1.5; }
+  .copy-btn {
+    width: 100%; padding: 14px; font-size: 15px; font-weight: 700;
+    border-radius: 14px; border: 2px solid #009246; background: #fff;
+    color: #009246; cursor: pointer; margin-bottom: 10px; transition: all 0.2s;
+  }
+  .copy-btn:hover { background: #f0faf4; }
+  .copy-btn.copied { background: #009246; color: #fff; }
+  .restart-btn {
+    width: 100%; padding: 14px; font-size: 16px; font-weight: 700;
+    border-radius: 14px; border: none; background: #ce2b37; color: #fff;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .restart-btn:hover { background: #a8202b; }
 </style>
 </head>
 <body>
@@ -118,12 +115,13 @@
 
   <div id="quiz-body">
     <div class="progress-wrap">
-      <div class="progress-label">
+      <div class="progress-meta">
         <span id="q-counter">Вопрос 1 из 15</span>
         <span class="score-badge">⭐ <span id="score-display">0</span> очков</span>
       </div>
       <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
     </div>
+    <div class="dots" id="dots-row"></div>
 
     <div class="question-area">
       <div class="question-label" id="question-label">Что значит слово?</div>
@@ -133,157 +131,215 @@
 
     <div class="options" id="options-container"></div>
     <div class="feedback" id="feedback"></div>
+
+    <div class="nav-row">
+      <button class="nav-btn btn-prev" id="btn-prev" onclick="goTo(current-1)" disabled>← Назад</button>
+      <button class="nav-btn btn-next hidden" id="btn-next" onclick="advance()">Вперёд →</button>
+    </div>
   </div>
 
   <div class="result-screen" id="result-screen">
     <div class="emoji" id="result-emoji">🎉</div>
     <h2 id="result-title">Отличная работа!</h2>
     <div class="score-big" id="result-score">0</div>
-    <div class="out-of" id="result-out-of">из 15</div>
-    <div class="msg" id="result-msg"></div>
+    <div class="out-of">правильных из 15</div>
+    <div class="result-msg" id="result-msg"></div>
+    <button class="copy-btn" id="copy-btn" onclick="copyScore()">📋 Скопировать результат для Slack</button>
     <button class="restart-btn" onclick="startQuiz()">🔄 Пройти ещё раз</button>
   </div>
 </div>
 
 <script>
 const vocab = [
-  { it: "il mercato",     ru: "рынок",              en: "market",         wrong_ru: ["площадь","магазин"], wrong_it: ["il negozio","la piazza"] },
-  { it: "la bancarella",  ru: "лоток / прилавок",   en: "market stall",   wrong_ru: ["автобус","полка"],   wrong_it: ["lo scaffale","il treno"] },
-  { it: "il portafoglio", ru: "кошелёк",             en: "wallet",         wrong_ru: ["сумка","ключи"],     wrong_it: ["la borsa","le chiavi"] },
-  { it: "la banconota",   ru: "купюра / банкнота",   en: "banknote",       wrong_ru: ["монета","карточка"], wrong_it: ["la moneta","la carta"] },
-  { it: "il resto",       ru: "сдача",               en: "change (money)", wrong_ru: ["цена","налог"],      wrong_it: ["il prezzo","la tassa"] },
-  { it: "lo sconto",      ru: "скидка",              en: "discount",       wrong_ru: ["очередь","касса"],   wrong_it: ["la fila","la cassa"] },
-  { it: "lo scontrino",   ru: "чек",                 en: "receipt",        wrong_ru: ["билет","письмо"],    wrong_it: ["il biglietto","la lettera"] },
-  { it: "il commesso",    ru: "продавец",             en: "shop assistant", wrong_ru: ["покупатель","директор"], wrong_it: ["il cliente","il direttore"] },
-  { it: "il cartellino",  ru: "ценник",              en: "price tag",      wrong_ru: ["обложка","этикетка"], wrong_it: ["la copertina","l'etichetta"] },
-  { it: "spendere",       ru: "тратить",             en: "to spend",       wrong_ru: ["зарабатывать","платить"], wrong_it: ["guadagnare","pagare"] },
-  { it: "costare",        ru: "стоить",              en: "to cost",        wrong_ru: ["платить","менять"],  wrong_it: ["pagare","cambiare"] },
-  { it: "pesare",         ru: "взвешивать",           en: "to weigh",       wrong_ru: ["считать","измерять"], wrong_it: ["contare","misurare"] },
-  { it: "assaggiare",     ru: "пробовать на вкус",    en: "to taste",       wrong_ru: ["нюхать","смотреть"], wrong_it: ["annusare","guardare"] },
-  { it: "vorrei",         ru: "я бы хотел(а)",       en: "I would like",   wrong_ru: ["мне нравится","у меня есть"], wrong_it: ["mi piace","ho"] },
-  { it: "il chilo",       ru: "килограмм",            en: "kilogram",       wrong_ru: ["литр","метр"],       wrong_it: ["il litro","il metro"] },
+  {it:"il mercato",     ru:"рынок",             en:"market",         wr:["площадь","магазин"],    wi:["il negozio","la piazza"]},
+  {it:"la bancarella",  ru:"лоток / прилавок",  en:"market stall",   wr:["автобус","полка"],      wi:["lo scaffale","il treno"]},
+  {it:"il portafoglio", ru:"кошелёк",            en:"wallet",         wr:["сумка","ключи"],        wi:["la borsa","le chiavi"]},
+  {it:"la banconota",   ru:"купюра / банкнота",  en:"banknote",       wr:["монета","карточка"],    wi:["la moneta","la carta"]},
+  {it:"il resto",       ru:"сдача",              en:"change (money)", wr:["цена","налог"],         wi:["il prezzo","la tassa"]},
+  {it:"lo sconto",      ru:"скидка",             en:"discount",       wr:["очередь","касса"],      wi:["la fila","la cassa"]},
+  {it:"lo scontrino",   ru:"чек",                en:"receipt",        wr:["билет","письмо"],       wi:["il biglietto","la lettera"]},
+  {it:"il commesso",    ru:"продавец",            en:"shop assistant", wr:["покупатель","директор"],wi:["il cliente","il direttore"]},
+  {it:"il cartellino",  ru:"ценник",             en:"price tag",      wr:["обложка","стикер"],     wi:["la copertina","il foglio"]},
+  {it:"spendere",       ru:"тратить",            en:"to spend",       wr:["зарабатывать","менять"],wi:["guadagnare","cambiare"]},
+  {it:"costare",        ru:"стоить",             en:"to cost",        wr:["платить","менять"],     wi:["pagare","cambiare"]},
+  {it:"pesare",         ru:"взвешивать",          en:"to weigh",       wr:["считать","измерять"],   wi:["contare","misurare"]},
+  {it:"assaggiare",     ru:"пробовать на вкус",   en:"to taste",       wr:["нюхать","смотреть"],    wi:["annusare","guardare"]},
+  {it:"vorrei",         ru:"я бы хотел(а)",       en:"I would like",   wr:["мне нравится","есть"], wi:["mi piace","ho"]},
+  {it:"il chilo",       ru:"килограмм",           en:"kilogram",       wr:["литр","метр"],          wi:["il litro","il metro"]},
 ];
 
-let questions = [];
-let current = 0;
-let score = 0;
-let answered = false;
+let questions=[], current=0, score=0, answers=[], autoTimer=null, wrongWords=[];
+const SCORE_SERVER = 'http://72.61.95.202:7891';
 
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
 
-function buildQuestions() {
-  questions = [];
-  const items = shuffle([...vocab]);
-  items.forEach((v, i) => {
-    if (i < 8) {
-      // Italian → Russian
-      const opts = shuffle([v.ru, v.wrong_ru[0], v.wrong_ru[1]]);
-      questions.push({ type: 'it2ru', word: v.it, answer: v.ru, options: opts, voice: v.it });
-    } else {
-      // Russian → Italian
-      const opts = shuffle([v.it, v.wrong_it[0], v.wrong_it[1]]);
-      questions.push({ type: 'ru2it', word: v.ru, answer: v.it, options: opts, voice: v.it });
-    }
+function buildQuestions(){
+  questions=[];
+  shuffle([...vocab]).forEach((v,i)=>{
+    if(i<8) questions.push({type:'it2ru',word:v.it,answer:v.ru,options:shuffle([v.ru,v.wr[0],v.wr[1]]),voice:v.it});
+    else     questions.push({type:'ru2it',word:v.ru,answer:v.it,options:shuffle([v.it,v.wi[0],v.wi[1]]),voice:v.it});
   });
 }
 
-function startQuiz() {
-  score = 0;
-  current = 0;
-  answered = false;
+function startQuiz(){
+  score=0; current=0; wrongWords=[];
   buildQuestions();
-  document.getElementById('quiz-body').style.display = '';
-  document.getElementById('result-screen').style.display = 'none';
-  showQuestion();
+  answers=new Array(questions.length).fill(null);
+  document.getElementById('quiz-body').style.display='';
+  document.getElementById('result-screen').style.display='none';
+  buildDots();
+  render(0);
 }
 
-function showQuestion() {
-  const q = questions[current];
-  answered = false;
-  document.getElementById('q-counter').textContent = `Вопрос ${current + 1} из ${questions.length}`;
-  document.getElementById('score-display').textContent = score;
-  document.getElementById('progress-fill').style.width = `${(current / questions.length) * 100}%`;
-  document.getElementById('feedback').textContent = '';
-  document.getElementById('feedback').className = 'feedback';
+function buildDots(){
+  const row=document.getElementById('dots-row');
+  row.innerHTML='';
+  questions.forEach((_,i)=>{
+    const d=document.createElement('div');
+    d.className='dot'; d.id=`dot-${i}`; d.title=`Вопрос ${i+1}`;
+    d.onclick=()=>goTo(i);
+    row.appendChild(d);
+  });
+}
 
-  const label = q.type === 'it2ru' ? 'Что значит это слово?' : 'Как сказать по-итальянски?';
-  document.getElementById('question-label').textContent = label;
-  document.getElementById('word-display').textContent = q.word;
-  document.getElementById('tts-btn').style.display = q.type === 'it2ru' ? '' : 'none';
+function updateDots(){
+  questions.forEach((_,i)=>{
+    const d=document.getElementById(`dot-${i}`);
+    d.className='dot';
+    if(i===current) d.classList.add('current');
+    else if(answers[i]) d.classList.add(answers[i].correct?'correct':'wrong');
+  });
+}
 
-  const container = document.getElementById('options-container');
-  container.innerHTML = '';
-  q.options.forEach(opt => {
-    const btn = document.createElement('button');
-    btn.className = 'option-btn';
-    btn.textContent = opt;
-    btn.onclick = () => selectAnswer(opt, btn, q);
+function goTo(idx){
+  if(autoTimer){clearTimeout(autoTimer);autoTimer=null;}
+  if(idx<0||idx>=questions.length) return;
+  current=idx; render(idx);
+}
+
+function advance(){
+  if(autoTimer){clearTimeout(autoTimer);autoTimer=null;}
+  if(current+1>=questions.length && answers.every(a=>a!==null)){showResult();return;}
+  if(current+1<questions.length){current++;render(current);}
+}
+
+function render(idx){
+  current=idx;
+  const q=questions[idx], ans=answers[idx], reviewing=ans!==null;
+  document.getElementById('q-counter').textContent=`Вопрос ${idx+1} из ${questions.length}`;
+  document.getElementById('score-display').textContent=score;
+  document.getElementById('progress-fill').style.width=`${(answers.filter(Boolean).length/questions.length)*100}%`;
+  document.getElementById('question-label').textContent=q.type==='it2ru'?'Что значит это слово?':'Как сказать по-итальянски?';
+  document.getElementById('word-display').textContent=q.word;
+  document.getElementById('tts-btn').style.display=q.type==='it2ru'?'':'none';
+  document.getElementById('tts-btn').className='tts-btn';
+
+  const fb=document.getElementById('feedback');
+  const container=document.getElementById('options-container');
+  container.innerHTML='';
+
+  q.options.forEach(opt=>{
+    const btn=document.createElement('button');
+    btn.className='option-btn';
+    btn.textContent=opt;
+    if(reviewing){
+      btn.disabled=true;
+      if(opt===q.answer&&ans.chosen===opt) btn.classList.add('r-correct');
+      else if(opt===ans.chosen) btn.classList.add('r-wrong');
+      else if(opt===q.answer) btn.classList.add('r-reveal');
+    } else {
+      btn.onclick=()=>selectAnswer(opt,btn,q,idx);
+    }
     container.appendChild(btn);
   });
-}
 
-function selectAnswer(chosen, btn, q) {
-  if (answered) return;
-  answered = true;
-  const correct = chosen === q.answer;
-  const fb = document.getElementById('feedback');
-
-  document.querySelectorAll('.option-btn').forEach(b => {
-    b.disabled = true;
-    if (b.textContent === q.answer) b.classList.add(correct ? 'correct' : 'reveal');
-  });
-
-  if (correct) {
-    btn.classList.add('correct');
-    score++;
-    fb.textContent = '✓ Правильно! Молодец!';
-    fb.className = 'feedback ok';
+  if(reviewing){
+    fb.textContent=ans.correct?'✓ Правильно!':'✗ Ответ: '+q.answer;
+    fb.className='feedback '+(ans.correct?'ok':'no');
   } else {
-    btn.classList.add('wrong');
-    fb.textContent = `✗ Ответ: ${q.answer}`;
-    fb.className = 'feedback no';
+    fb.textContent=''; fb.className='feedback';
   }
 
-  document.getElementById('score-display').textContent = score;
-
-  setTimeout(() => {
-    current++;
-    if (current >= questions.length) showResult();
-    else showQuestion();
-  }, correct ? 1400 : 2200);
+  const prevBtn=document.getElementById('btn-prev');
+  const nextBtn=document.getElementById('btn-next');
+  prevBtn.disabled=idx===0;
+  if(reviewing){
+    nextBtn.classList.remove('hidden');
+    const allDone=answers.every(a=>a!==null);
+    nextBtn.textContent=(idx===questions.length-1&&allDone)?'Результат 🏁':'Вперёд →';
+  } else {
+    nextBtn.classList.add('hidden');
+  }
+  updateDots();
 }
 
-function speakWord() {
-  const q = questions[current];
-  if ('speechSynthesis' in window) {
-    const u = new SpeechSynthesisUtterance(q.voice);
-    u.lang = 'it-IT';
-    u.rate = 0.85;
+function selectAnswer(chosen,btn,q,idx){
+  if(answers[idx]) return;
+  const correct=chosen===q.answer;
+  if(correct) score++;
+  else wrongWords.push(q.word);
+  answers[idx]={chosen,correct};
+  document.querySelectorAll('.option-btn').forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===q.answer) b.classList.add('correct');
+  });
+  if(!correct){btn.classList.remove('correct');btn.classList.add('wrong');}
+  const fb=document.getElementById('feedback');
+  fb.textContent=correct?'✓ Правильно! Молодец!':'✗ Ответ: '+q.answer;
+  fb.className='feedback '+(correct?'ok':'no');
+  document.getElementById('score-display').textContent=score;
+  const nextBtn=document.getElementById('btn-next');
+  nextBtn.classList.remove('hidden');
+  const allDone=answers.every(a=>a!==null);
+  nextBtn.textContent=(idx===questions.length-1&&allDone)?'Результат 🏁':'Вперёд →';
+  updateDots();
+  // Auto-advance: shorter wait if correct, longer if wrong (Next button cancels it)
+  if(autoTimer) clearTimeout(autoTimer);
+  autoTimer=setTimeout(()=>{ autoTimer=null; advance(); }, correct ? 1500 : 2400);
+}
+
+function speakWord(){
+  const q=questions[current], btn=document.getElementById('tts-btn');
+  if('speechSynthesis' in window){
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(q.voice);
+    u.lang='it-IT'; u.rate=0.82;
+    u.onstart=()=>btn.classList.add('playing');
+    u.onend=()=>btn.classList.remove('playing');
     window.speechSynthesis.speak(u);
   }
 }
 
-function showResult() {
-  document.getElementById('quiz-body').style.display = 'none';
-  const rs = document.getElementById('result-screen');
-  rs.style.display = '';
-  const pct = Math.round((score / questions.length) * 100);
-  document.getElementById('result-score').textContent = score;
-  document.getElementById('result-out-of').textContent = `из ${questions.length} правильных`;
-  let emoji, title, msg;
-  if (pct >= 90) { emoji='🏆'; title='Превосходно!'; msg='Отличный результат! Ты готов к следующему уроку.'; }
-  else if (pct >= 70) { emoji='🎉'; title='Хорошая работа!'; msg='Почти всё правильно. Повтори пару слов и ты всё запомнишь!'; }
-  else if (pct >= 50) { emoji='💪'; title='Неплохо!'; msg='Ещё немного практики — и слова запомнятся!'; }
-  else { emoji='📚'; title='Продолжай!'; msg='Перечитай историю и попробуй ещё раз. У тебя всё получится!'; }
-  document.getElementById('result-emoji').textContent = emoji;
-  document.getElementById('result-title').textContent = title;
-  document.getElementById('result-msg').textContent = msg;
+function showResult(){
+  document.getElementById('quiz-body').style.display='none';
+  document.getElementById('result-screen').style.display='';
+  const pct=Math.round(score/questions.length*100);
+  document.getElementById('result-score').textContent=score;
+  let e,t,m;
+  if(pct>=90){e='🏆';t='Превосходно!';m='Блестящий результат! Урок 1 усвоен. Domani — новые слова!';}
+  else if(pct>=70){e='🎉';t='Хорошая работа!';m='Почти всё правильно. Повтори пару слов и ты будешь отличником!';}
+  else if(pct>=50){e='💪';t='Неплохо!';m='Ещё немного практики — и слова запомнятся!';}
+  else{e='📚';t='Продолжай!';m="Перечитай историю и попробуй ещё раз. Ogni giorno un po' meglio!";}
+  document.getElementById('result-emoji').textContent=e;
+  document.getElementById('result-title').textContent=t;
+  document.getElementById('result-msg').textContent=m;
+  document.getElementById('copy-btn').textContent='📋 Скопировать результат для Slack';
+  document.getElementById('copy-btn').classList.remove('copied');
+  // Auto-submit score to server (fire & forget)
+  const d=new Date().toLocaleDateString('ru-RU');
+  fetch(SCORE_SERVER+'/score',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({date:d,lesson:'Lesson 1 — Il Mercato',quizType:'Vocabulary',
+      score,total:questions.length,wrongWords})}).catch(()=>{});
+}
+
+function copyScore(){
+  const d=new Date().toLocaleDateString('ru-RU');
+  const txt=`🇮🇹 Квиз — Урок 1: Il Mercato\n✅ Результат: ${score}/15 (${Math.round(score/15*100)}%)\n📅 ${d}\n🔗 https://ilia-inovaflow.github.io/david-italiano/`;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const b=document.getElementById('copy-btn');
+    b.textContent='✓ Скопировано! Вставь в Slack';
+    b.classList.add('copied');
+  }).catch(()=>prompt('Скопируй вручную:',`Урок 1: ${score}/15`));
 }
 
 startQuiz();
